@@ -1,9 +1,8 @@
 en:
   js:
     lottery:
-      title: "Lottery"
       create: "Create Lottery"
-      prize: "Prize: %{prize}"
-      winners_count: "Number of winners: %{count}"
-      completed: "This lottery has been completed"
-      end_condition: "Ends after: %{condition} %{value}"
+      create_title: "Create a New Lottery"
+      prize_placeholder: "Enter prize description"
+      winners_count_placeholder: "Enter number of winners"
+      end_value_placeholder: "Enter end value (hours or posts)"
