@@ -1,4 +1,3 @@
-# plugin.rb
 # name: discourse-lottery
 # about: Add lottery functionality to Discourse topics
 # version: 0.1
@@ -30,14 +29,14 @@ after_initialize do
       lottery = topic.create_lottery(lottery_params.merge(user: current_user))
 
       if lottery.save
-        render json: lottery, serializer: LotterySerializer
+        render json: lottery, serializer: BasicLotterySerializer
       else
         render_json_error(lottery)
       end
     end
 
     def draw
-      lottery = Lottery.find(params[:id])
+      lottery = ::DiscourseLottery::Lottery.find(params[:id])
       guardian.ensure_can_edit!(lottery.topic)
 
       winners = lottery.draw_winners
@@ -52,7 +51,7 @@ after_initialize do
     end
   end
 
-  class ::Lottery < ::ActiveRecord::Base
+  class ::DiscourseLottery::Lottery < ::ActiveRecord::Base
     belongs_to :topic
     belongs_to :user
 
@@ -81,19 +80,17 @@ after_initialize do
     end
   end
 
+  require_dependency 'topic'
   class ::Topic
-    has_one :lottery
+    has_one :lottery, class_name: 'DiscourseLottery::Lottery'
   end
 
   add_to_serializer(:topic_view, :lottery) do
-    LotterySerializer.new(object.topic.lottery, root: false).as_json if object.topic.lottery
+    BasicLotterySerializer.new(object.topic.lottery, root: false).as_json if object.topic.lottery
   end
 
-  add_model_callback(Post, :after_create) do
-    if self.is_first_post? && self.raw_parameters[:lottery]
-      lottery_params = self.raw_parameters[:lottery]
-      topic.create_lottery(lottery_params.merge(user: self.user))
-    end
+  class ::DiscourseLottery::BasicLotterySerializer < ::ApplicationSerializer
+    attributes :id, :prize_description, :winners_count, :end_condition, :end_value, :status
   end
 
   on(:post_created) do |post|
@@ -101,6 +98,13 @@ after_initialize do
       if lottery.end_condition == "post_count" && post.topic.posts.count >= lottery.end_value
         lottery.draw_winners
       end
+    end
+  end
+
+  add_model_callback(Post, :after_create) do
+    if self.is_first_post? && self.raw_parameters[:lottery]
+      lottery_params = self.raw_parameters[:lottery]
+      self.topic.create_lottery(lottery_params.merge(user: self.user))
     end
   end
 
@@ -113,3 +117,6 @@ after_initialize do
     mount ::DiscourseLottery::Engine, at: "lottery"
   end
 end
+
+# 添加一个插件的前端初始化文件
+register_asset "javascripts/discourse/initializers/lottery-setup.js.es6"
