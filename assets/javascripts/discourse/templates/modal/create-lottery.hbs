@@ -1,0 +1,13 @@
+{{#d-modal-body title="lottery.create_title"}}
+  <form>
+    {{input value=prize placeholder="lottery.prize_placeholder"}}
+    {{input type="number" value=winnersCount placeholder="lottery.winners_count_placeholder"}}
+    {{input type="number" value=endValue placeholder="lottery.end_value_placeholder"}}
+  </form>
+{{/d-modal-body}}
+
+{{d-button
+  class="btn-primary"
+  action=(action "createLottery")
+  label="lottery.create"
+}}
