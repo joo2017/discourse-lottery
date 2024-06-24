@@ -2,23 +2,32 @@ import { withPluginApi } from "discourse/lib/plugin-api";
 import showModal from "discourse/lib/show-modal";
 
 function initializeLottery(api) {
-  api.modifyClass("controller:topic", {
+  api.modifyClass("controller:composer", {
     pluginId: "discourse-lottery",
     actions: {
-      createLottery() {
+      showLotteryModal() {
         showModal("create-lottery", { model: this.model });
       }
     }
   });
 
-  api.addPostMenuButton("lottery", (post) => {
-    if (post.post_number === 1 && !post.get("topic.lottery")) {
-      return {
-        action: "createLottery",
-        icon: "gift",
-        className: "lottery-button",
-        title: "lottery.create"
-      };
+  api.addToolbarPopupMenuOptionsCallback(() => {
+    return {
+      action: "showLotteryModal",
+      icon: "gift",
+      label: "lottery.create",
+      condition: (composer) => composer.get("canCreateLottery")
+    };
+  });
+
+  api.modifyClass("model:composer", {
+    pluginId: "discourse-lottery",
+    canCreateLottery: function() {
+      return this.get("topicFirstPost") && !this.get("topic.lottery");
+    }.property("topicFirstPost", "topic.lottery"),
+
+    createLottery(lotteryOptions) {
+      this.set("lottery", lotteryOptions);
     }
   });
 }
