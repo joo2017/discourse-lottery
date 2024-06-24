@@ -1,0 +1,10 @@
+plugins:
+  lottery_enabled:
+    default: true
+    client: true
+  lottery_max_winners:
+    default: 10
+    client: true
+  lottery_max_duration_hours:
+    default: 168
+    client: true
