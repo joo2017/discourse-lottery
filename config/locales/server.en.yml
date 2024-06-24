@@ -1,5 +1,3 @@
 en:
   site_settings:
     lottery_enabled: "Enable the lottery plugin"
-  lottery:
-    winner_message: "Congratulations! You've won the lottery in the topic '%{topic_title}'. Your prize is: %{prize}"
