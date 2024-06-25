@@ -4,6 +4,8 @@
 # authors: Your Name
 # url: https://github.com/yourusername/discourse-lottery
 
+PLUGIN_NAME ||= "discourse-lottery"
+
 enabled_site_setting :lottery_enabled
 
 register_asset "javascripts/discourse/templates/modal/create-lottery.hbs"
@@ -32,7 +34,7 @@ after_initialize do
       if lottery.save
         render json: lottery, serializer: BasicLotterySerializer
       else
-        render_json_error(lottery)
+        render json: { errors: lottery.errors.full_messages }, status: :unprocessable_entity
       end
     end
 
@@ -59,7 +61,8 @@ after_initialize do
     validates :prize_description, presence: true
     validates :winners_count, presence: true, numericality: { greater_than: 0 }
     validates :end_condition, presence: true
-    validates :end_valu
+    validates :end_value, presence: true
+
     def draw_winners
       participants = topic.posts.where("post_number > 1").map(&:user).uniq
       winners = participants.sample(winners_count)
@@ -67,6 +70,7 @@ after_initialize do
       winners.each do |winner|
         notify_winner(winner)
       end
+      winners
     end
 
     private
@@ -74,7 +78,8 @@ after_initialize do
     def notify_winner(user)
       SystemMessage.create(user, :lottery_winner, 
         topic_title: topic.title,
-        prize:       )
+        prize: prize_description
+      )
     end
   end
 
@@ -87,23 +92,27 @@ after_initialize do
     BasicLotterySerializer.new(object.topic.lottery, root: false).as_json if object.topic.lottery
   end
 
-  class ::DiscourseLottery::BasicLotterySerializer < ::ApplicationSe    attributes :id, :prize_description, :winners_count, :end_condition, :end_value, :status
+  class ::DiscourseLottery::BasicLotterySerializer < ::ApplicationSerializer
+    attributes :id, :prize_description, :winners_count, :end_condition, :end_value, :status
   end
 
   on(:post_created) do |post|
     if lottery = post.topic.lottery
-      if lottery.end_condition == "post_count"        lottery.draw_winners
+      if lottery.end_condition == "post_count" && post.topic.posts.count >= lottery.end_value
+        lottery.draw_winners
       end
     end
   end
 
   add_model_callback(Post, :after_create) do
     if self.is_first_post? && self.raw_parameters[:lottery]
-      lo      self.topic.create_lottery(lottery_params.merge(user: self.user))
+      lottery_params = self.raw_parameters[:lottery]
+      self.topic.create_lottery(lottery_params.merge(user: self.user))
     end
   end
 
-  DiscourseLottery::    post "/topics/:topic_id/lottery" => "lotteries#create"
+  DiscourseLottery::Engine.routes.draw do
+    post "/topics/:topic_id/lottery" => "lotteries#create"
     post "/lottery/:id/draw" => "lotteries#draw"
   end
 
