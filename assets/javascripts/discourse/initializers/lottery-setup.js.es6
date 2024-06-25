@@ -4,13 +4,14 @@ import showModal from "discourse/lib/show-modal";
 export default {
   name: "lottery-setup",
   initialize() {
+    console.log("Lottery plugin initializing");
     withPluginApi("0.8.31", api => {
       api.addToolbarPopupMenuOptionsCallback(() => {
         return {
           action: "showLotteryModal",
           icon: "gift",
           label: "lottery.create",
-          condition: composer => composer.get("topicFirstPost") !== undefined
+          condition: composer => composer.get("topicFirstPost")
         };
       });
 
