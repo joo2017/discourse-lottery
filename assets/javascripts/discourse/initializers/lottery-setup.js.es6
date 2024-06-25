@@ -4,7 +4,6 @@ import showModal from "discourse/lib/show-modal";
 export default {
   name: "lottery-setup",
   initialize() {
-    console.log("Lottery plugin initializing");
     withPluginApi("0.8.31", api => {
       api.addToolbarPopupMenuOptionsCallback(() => {
         return {
@@ -18,7 +17,9 @@ export default {
       api.modifyClass("controller:composer", {
         actions: {
           showLotteryModal() {
-            showModal("create-lottery");
+            showModal("create-lottery", { model: this.model }).setProperties({
+              topicId: this.model.id
+            });
           }
         }
       });
