@@ -6,3 +6,4 @@ en:
       prize_placeholder: "Enter prize description"
       winners_count_placeholder: "Enter number of winners"
       end_value_placeholder: "Enter end value (hours or posts)"
+      creation_failed: "Failed to create lottery, please try again."
