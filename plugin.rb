@@ -9,7 +9,7 @@ enabled_site_setting :lottery_enabled
 register_asset "javascripts/discourse/templates/modal/create-lottery.hbs"
 register_asset "javascripts/discourse/controllers/create-lottery.js.es6"
 
-register_migration
+register_svg_icon "gift" if respond_to?(:register_svg_icon)
 
 after_initialize do
   module ::DiscourseLottery
@@ -34,7 +34,7 @@ after_initialize do
       if lottery.save
         render json: lottery, serializer: BasicLotterySerializer
       else
-        render_json_error(lottery)
+        render json: { errors: lottery.errors.full_messages }, status: :unprocessable_entity
       end
     end
 
@@ -101,13 +101,6 @@ after_initialize do
       if lottery.end_condition == "post_count" && post.topic.posts.count >= lottery.end_value
         lottery.draw_winners
       end
-    end
-  end
-
-  add_model_callback(Post, :after_create) do
-    if self.is_first_post? && self.raw_parameters[:lottery]
-      lottery_params = self.raw_parameters[:lottery]
-      self.topic.create_lottery(lottery_params.merge(user: self.user))
     end
   end
 
