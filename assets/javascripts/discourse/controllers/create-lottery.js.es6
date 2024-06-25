@@ -1,7 +1,9 @@
 import Controller from "@ember/controller";
 import ModalFunctionality from "discourse/mixins/modal-functionality";
 import { ajax } from "discourse/lib/ajax";
+import { popupAjaxError } from "discourse/lib/ajax-error";
 import { inject as service } from "@ember/service";
+import { action } from "@ember/object";
 
 export default Controller.extend(ModalFunctionality, {
   prize: "",
@@ -9,26 +11,24 @@ export default Controller.extend(ModalFunctionality, {
   endCondition: "time",
   endValue: 24,
   topicId: null,
-
   currentUser: service(),
 
-  actions: {
-    createLottery() {
-      let lotteryData = {
-        prize_description: this.prize,
-        winners_count: this.winnersCount,
-        end_condition: this.endCondition,
-        end_value: this.endValue,
-      };
+  @action
+  createLottery() {
+    let lotteryData = {
+      prize_description: this.prize,
+      winners_count: this.winnersCount,
+      end_condition: this.endCondition,
+      end_value: this.endValue,
+    };
 
-      ajax(`/lottery/topics/${this.topicId}/lottery`, {
-        type: "POST",
-        data: { lottery: lotteryData }
-      }).then(() => {
-        this.send("closeModal");
-      }).catch((error) => {
-        // Handle error (e.g., display an error message)
-      });
-    }
+    ajax(`/lottery/topics/${this.topicId}/lottery`, {
+      type: "POST",
+      data: { lottery: lotteryData }
+    }).then(() => {
+      this.flash(I18n.t("lottery.created_successfully"), "success");
+      this.send("closeModal");
+      // 可能需要在这里添加逻辑来刷新或更新UI
+    }).catch(popupAjaxError);
   }
 });
