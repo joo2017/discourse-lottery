@@ -26,9 +26,11 @@ export default Controller.extend(ModalFunctionality, {
       type: "POST",
       data: { lottery: lotteryData }
     }).then(() => {
-      this.flash(I18n.t("lottery.created_successfully"), "success");
       this.send("closeModal");
       // 可能需要在这里添加逻辑来刷新或更新UI
-    }).catch(popupAjaxError);
+    }).catch((error) => {
+      popupAjaxError(error);
+      this.flash(I18n.t("lottery.creation_failed"), "error");
+    });
   }
 });
