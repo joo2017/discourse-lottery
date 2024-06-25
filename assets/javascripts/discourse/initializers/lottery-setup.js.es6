@@ -8,13 +8,9 @@ export default {
       api.addToolbarPopupMenuOptionsCallback(() => {
         return {
           action: "showLotteryModal",
-          icon: "plus", // 尝试使用 "plus" 图标
-          // 或者尝试这些选项：
-          // icon: "cog",
-          // icon: "random",
-          // icon: "discourse-expand", // Discourse 特定图标
+          icon: "gift",
           label: "lottery.create",
-          condition: composer => composer.get("topicFirstPost")
+          condition: composer => composer.get("topicFirstPost") !== undefined
         };
       });
 
