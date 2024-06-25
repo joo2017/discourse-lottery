@@ -4,24 +4,24 @@
 # authors: Your Name
 # url: https://github.com/yourusername/discourse-lottery
 
-PLUGIN_NAME ||= "discourse-lottery"
-
 enabled_site_setting :lottery_enabled
 
 register_asset "javascripts/discourse/templates/modal/create-lottery.hbs"
 register_asset "javascripts/discourse/controllers/create-lottery.js.es6"
 
+register_migration
+
 after_initialize do
   module ::DiscourseLottery
     class Engine < ::Rails::Engine
-      engine_name PLUGIN_NAME
+      engine_name "DiscourseLottery"
       isolate_namespace DiscourseLottery
     end
   end
 
   require_dependency "application_controller"
   class DiscourseLottery::LotteriesController < ::ApplicationController
-    requires_plugin PLUGIN_NAME
+    requires_plugin "DiscourseLottery"
 
     before_action :ensure_logged_in
 
@@ -34,7 +34,7 @@ after_initialize do
       if lottery.save
         render json: lottery, serializer: BasicLotterySerializer
       else
-        render json: { errors: lottery.errors.full_messages }, status: :unprocessable_entity
+        render_json_error(lottery)
       end
     end
 
