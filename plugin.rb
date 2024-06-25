@@ -10,6 +10,7 @@ register_asset "javascripts/discourse/templates/modal/create-lottery.hbs"
 register_asset "javascripts/discourse/controllers/create-lottery.js.es6"
 
 register_svg_icon "gift" if respond_to?(:register_svg_icon)
+register_migration
 
 after_initialize do
   module ::DiscourseLottery
