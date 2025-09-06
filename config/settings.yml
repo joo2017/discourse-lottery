@@ -1,0 +1,29 @@
+plugins:
+  lottery_enabled:
+    type: bool
+    default: false
+    description: "启用抽奖插件功能"
+    
+  lottery_min_participants_global:
+    type: integer
+    default: 5
+    min: 1
+    max: 1000
+    description: "全局最低参与人数门槛"
+    
+  lottery_post_lock_delay_minutes:
+    type: integer  
+    default: 60
+    min: 0
+    max: 10080
+    description: "规则保护期（分钟）- 发布后多久锁定帖子禁止编辑"
+    
+  lottery_excluded_groups:
+    type: group_list
+    default: "staff|moderators"
+    description: "排除的用户组 - 这些组的成员不能参与抽奖"
+    
+  lottery_allowed_categories:
+    type: category_list
+    default: ""
+    description: "允许发起抽奖的分类 - 留空则所有分类都允许"
