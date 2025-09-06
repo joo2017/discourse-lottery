@@ -59,7 +59,39 @@ add_to_serializer(:post, :lottery_data) do
     fixed_floors: object.custom_fields['lottery_fixed_floors'],
     min_participants: object.custom_fields['lottery_min_participants'],
     backup_strategy: object.custom_fields['lottery_backup_strategy'],
-    additional_notes: object.custom_fields['lottery_additional_notes'],
+          additional_notes: object.custom_fields['lottery_additional_notes'],
+      status: object.custom_fields['lottery_status'] || 'running',
+      draw_method: object.custom_fields['lottery_draw_method'] || 'random',
+      current_participants: 0,
+      time_remaining: nil,
+      winners: []
+    }
+  end
+
+  add_to_serializer(:post, :include_lottery_data?) do
+    object.custom_fields['lottery_name'].present?
+  end
+
+  # 将全局设置暴露给前端
+  add_to_serializer(:site, :lottery_settings) do
+    {
+      enabled: SiteSetting.lottery_enabled,
+      min_participants_global: SiteSetting.lottery_min_participants_global,
+      post_lock_delay_minutes: SiteSetting.lottery_post_lock_delay_minutes,
+      excluded_groups: SiteSetting.lottery_excluded_groups.split('|'),
+      allowed_categories: SiteSetting.lottery_allowed_categories.split('|')
+    }
+  end
+
+  # 事件监听器
+  DiscourseEvent.on(:topic_created) do |topic|
+    # 后续实现抽奖创建逻辑
+  end
+  
+  DiscourseEvent.on(:post_edited) do |post|
+    # 后续实现抽奖编辑逻辑
+  end
+end'],
     status: object.custom_fields['lottery_status'] || 'running',
     draw_method: object.custom_fields['lottery_draw_method'] || 'random',
     current_participants: 0, # 前端模拟数据
