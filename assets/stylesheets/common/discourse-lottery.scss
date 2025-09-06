@@ -1,0 +1,483 @@
+/* assets/stylesheets/mobile/discourse-lottery.scss */
+
+// 移动端专用样式
+.lottery-form-container {
+  // 移动端全屏显示
+  margin: 0 -1rem;
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+  
+  .lottery-form-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+    
+    .form-actions {
+      justify-content: center;
+    }
+  }
+  
+  .form-row {
+    &.form-row-split {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+  }
+}
+
+.lottery-status-card {
+  // 移动端卡片优化
+  margin: 0 -1rem;
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+  
+  .lottery-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+    
+    .lottery-title-section {
+      width: 100%;
+      
+      .lottery-title {
+        font-size: 1.1rem;
+        line-height: 1.3;
+      }
+    }
+    
+    .status-badge {
+      align-self: flex-end;
+      margin-top: -2rem;
+    }
+  }
+  
+  .lottery-content {
+    .detail-row {
+      grid-template-columns: 1fr;
+      gap: 0.5rem;
+    }
+    
+    .lottery-actions {
+      flex-direction: column;
+      gap: 0.75rem;
+      
+      .participate-btn {
+        padding: 1rem;
+        font-size: 1rem;
+        border-radius: 8px;
+      }
+    }
+    
+    .winners-section {
+      .winners-list {
+        .winner-item {
+          padding: 1rem;
+          
+          .winner-avatar {
+            width: 40px;
+            height: 40px;
+          }
+          
+          .winner-info {
+            .username {
+              font-size: 1rem;
+            }
+            
+            .floor-number {
+              font-size: 0.9rem;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// 移动端表单字段优化
+.lottery-form-field {
+  .form-control {
+    padding: 1rem;
+    font-size: 1rem;
+    border-radius: 8px;
+    
+    // 移动端输入框放大，避免页面缩放
+    &[type="datetime-local"],
+    &[type="number"],
+    &[type="text"] {
+      font-size: 16px; // 防止 iOS Safari 自动缩放
+    }
+  }
+  
+  .image-upload-area {
+    .upload-placeholder {
+      padding: 3rem 1rem;
+      
+      .upload-text {
+        .d-icon {
+          font-size: 3rem;
+        }
+        
+        span {
+          font-size: 1.1rem;
+        }
+      }
+    }
+    
+    .uploaded-image {
+      .prize-preview {
+        max-width: 100%;
+        height: auto;
+      }
+    }
+  }
+}
+
+// 移动端参与进度条
+.participants-section {
+  .participants-progress {
+    .progress-bar {
+      height: 12px; // 移动端更粗的进度条
+    }
+  }
+}
+
+// 移动端模态框优化（如果有）
+.lottery-modal {
+  .modal-body {
+    padding: 1rem;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+}
+
+/* assets/stylesheets/desktop/discourse-lottery.scss */
+
+// 桌面端专用样式和增强效果
+.lottery-form-container {
+  max-width: 800px;
+  
+  // 桌面端悬浮效果
+  &:hover {
+    box-shadow: 0 8px 25px var(--lottery-shadow);
+    transform: translateY(-2px);
+    transition: all 0.3s ease;
+  }
+  
+  .lottery-form-header {
+    .form-actions {
+      .preview-btn {
+        transition: all 0.2s ease;
+        
+        &:hover {
+          transform: scale(1.05);
+        }
+      }
+    }
+  }
+}
+
+.lottery-status-card {
+  max-width: 800px;
+  
+  // 桌面端卡片悬浮效果
+  &:hover {
+    box-shadow: 0 8px 25px var(--lottery-shadow);
+    transform: translateY(-2px);
+    transition: all 0.3s ease;
+  }
+  
+  .lottery-content {
+    .lottery-details {
+      .detail-row {
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+      }
+    }
+    
+    .lottery-actions {
+      .participate-btn {
+        position: relative;
+        overflow: hidden;
+        
+        // 桌面端按钮波纹效果
+        &::before {
+          content: '';
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          width: 0;
+          height: 0;
+          border-radius: 50%;
+          background: rgba(255, 255, 255, 0.3);
+          transition: width 0.6s, height 0.6s;
+          transform: translate(-50%, -50%);
+          z-index: 0;
+        }
+        
+        &:active::before {
+          width: 300px;
+          height: 300px;
+        }
+        
+        span {
+          position: relative;
+          z-index: 1;
+        }
+      }
+    }
+    
+    .winners-section {
+      .winners-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+        
+        .winner-item {
+          &:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+            transition: all 0.2s ease;
+          }
+        }
+      }
+    }
+  }
+}
+
+// 桌面端表单增强
+.lottery-form {
+  .form-row {
+    &.form-row-split {
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+  }
+  
+  .form-actions {
+    .submit-btn {
+      position: relative;
+      overflow: hidden;
+      
+      // 提交按钮加载动画
+      &.loading {
+        pointer-events: none;
+        
+        .d-icon {
+          animation: spin 1s linear infinite;
+        }
+      }
+      
+      // 桌面端按钮悬浮效果
+      &:not(:disabled):hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(var(--tertiary-rgb), 0.4);
+        transition: all 0.2s ease;
+      }
+    }
+  }
+}
+
+// 桌面端表单字段增强
+.lottery-form-field {
+  .form-control {
+    &:focus {
+      transform: scale(1.02);
+      transition: all 0.2s ease;
+    }
+  }
+  
+  .image-upload-area {
+    .upload-placeholder {
+      position: relative;
+      
+      // 桌面端拖拽上传效果
+      &.dragover {
+        border-color: var(--lottery-primary);
+        background: rgba(var(--tertiary-rgb), 0.1);
+        transform: scale(1.02);
+      }
+      
+      &:hover {
+        border-color: var(--lottery-primary);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px var(--lottery-shadow);
+      }
+    }
+  }
+}
+
+// 桌面端参与进度增强
+.participants-section {
+  .participants-progress {
+    .progress-bar {
+      position: relative;
+      
+      // 桌面端进度条光效
+      &::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.4),
+          transparent
+        );
+        animation: progress-shine 2s infinite;
+      }
+    }
+  }
+}
+
+// 桌面端工具提示
+.lottery-tooltip {
+  position: relative;
+  
+  &::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--primary-very-high);
+    color: var(--secondary);
+    padding: 0.5rem 0.75rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    z-index: 1000;
+  }
+  
+  &::before {
+    content: '';
+    position: absolute;
+    bottom: 115%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: var(--primary-very-high);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    z-index: 1000;
+  }
+  
+  &:hover::after,
+  &:hover::before {
+    opacity: 1;
+  }
+}
+
+// 桌面端动画
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes progress-shine {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+// 桌面端侧边栏集成（如果需要）
+.lottery-sidebar-widget {
+  background: var(--lottery-card-bg);
+  border: 1px solid var(--lottery-border);
+  border-radius: var(--lottery-radius);
+  padding: 1rem;
+  margin-bottom: 1rem;
+  
+  .widget-title {
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    
+    .d-icon {
+      color: var(--lottery-primary);
+    }
+  }
+  
+  .lottery-list {
+    .lottery-item {
+      padding: 0.75rem;
+      border-radius: 4px;
+      margin-bottom: 0.5rem;
+      border-left: 4px solid var(--lottery-primary);
+      background: var(--primary-very-low);
+      transition: all 0.2s ease;
+      
+      &:hover {
+        background: var(--primary-low);
+        transform: translateX(4px);
+      }
+      
+      .lottery-name {
+        font-weight: 500;
+        color: var(--lottery-text);
+        margin-bottom: 0.25rem;
+      }
+      
+      .lottery-meta {
+        font-size: 0.8rem;
+        color: var(--lottery-text-muted);
+        display: flex;
+        justify-content: space-between;
+      }
+    }
+  }
+}
+
+// 桌面端全屏模态框（详细信息）
+.lottery-details-modal {
+  .modal-dialog {
+    max-width: 900px;
+    width: 90vw;
+  }
+  
+  .modal-header {
+    background: linear-gradient(135deg, var(--lottery-primary), var(--tertiary-hover));
+    color: var(--secondary);
+    border-radius: 8px 8px 0 0;
+    
+    .modal-title {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      
+      .d-icon {
+        font-size: 1.5rem;
+      }
+    }
+  }
+  
+  .modal-body {
+    padding: 2rem;
+    max-height: 70vh;
+    overflow-y: auto;
+    
+    .lottery-full-details {
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 2rem;
+      
+      @media (max-width: 1024px) {
+        grid-template-columns: 1fr;
+      }
+    }
+  }
+}
