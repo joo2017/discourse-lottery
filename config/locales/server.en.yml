@@ -1,0 +1,7 @@
+en:
+  site_settings:
+    lottery_enabled: "Enable the lottery system"
+    lottery_min_participants_global: "Minimum total participants for all lotteries"
+    lottery_post_lock_delay_minutes: "Minutes to lock lottery posts after creation"
+    lottery_excluded_groups: "User groups not allowed to participate in lotteries"
+    lottery_allowed_categories: "Categories where lottery creation is enabled"
