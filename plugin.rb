@@ -1,3 +1,4 @@
+# plugin.rb - 插件主文件
 # frozen_string_literal: true
 
 # name: discourse-lottery
@@ -20,7 +21,18 @@ register_svg_icon "trophy" if respond_to?(:register_svg_icon)
 # 全局设置定义
 add_admin_route 'lottery.admin_title', 'plugins.lottery'
 
-# 自定义字段注册
+# 站点设置
+%w[
+  lottery_enabled
+  lottery_min_participants_global
+  lottery_post_lock_delay_minutes
+  lottery_excluded_groups
+  lottery_allowed_categories
+].each do |setting|
+  register_site_setting_type(setting, String) if setting.end_with?('_groups', '_categories')
+end
+
+# 自定义字段注册 - 为前端模拟数据做准备
 register_post_custom_field_type('lottery_name', :string)
 register_post_custom_field_type('lottery_prize_description', :string)
 register_post_custom_field_type('lottery_prize_image_url', :string)
@@ -33,7 +45,7 @@ register_post_custom_field_type('lottery_additional_notes', :text)
 register_post_custom_field_type('lottery_status', :string)
 register_post_custom_field_type('lottery_draw_method', :string)
 
-# 序列化器扩展
+# 序列化器扩展 - 将抽奖数据暴露给前端
 add_to_serializer(:post, :lottery_data) do
   return nil unless object.custom_fields['lottery_name']
   
@@ -50,7 +62,7 @@ add_to_serializer(:post, :lottery_data) do
     additional_notes: object.custom_fields['lottery_additional_notes'],
     status: object.custom_fields['lottery_status'] || 'running',
     draw_method: object.custom_fields['lottery_draw_method'] || 'random',
-    current_participants: 0,
+    current_participants: 0, # 前端模拟数据
     time_remaining: nil,
     winners: []
   }
@@ -73,7 +85,10 @@ end
 
 # 初始化插件
 after_initialize do
-  # 事件监听器
+  # 这里后续会添加 Jobs、Services 等后端逻辑
+  # 目前专注于前端实现
+  
+  # 简单的事件监听器 - 为前端测试提供数据
   DiscourseEvent.on(:topic_created) do |topic|
     # 后续实现抽奖创建逻辑
   end
