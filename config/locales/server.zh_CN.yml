@@ -1,0 +1,7 @@
+zh_CN:
+  site_settings:
+    lottery_enabled: "启用抽奖系统"
+    lottery_min_participants_global: "所有抽奖活动的全局最低参与人数"
+    lottery_post_lock_delay_minutes: "抽奖帖子创建后锁定编辑的时间（分钟）"
+    lottery_excluded_groups: "不允许参与抽奖的用户组"
+    lottery_allowed_categories: "允许创建抽奖的分类"
