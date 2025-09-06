@@ -1,0 +1,86 @@
+zh_CN:
+  js:
+    discourse_lottery:
+      title: "抽奖系统"
+      
+      # 表单字段
+      form:
+        activity_name: "活动名称"
+        activity_name_placeholder: "请输入抽奖活动名称"
+        prize_description: "奖品说明"
+        prize_description_placeholder: "详细描述奖品内容"
+        prize_image: "奖品图片"
+        draw_time: "开奖时间"
+        winner_count: "获奖人数"
+        winner_count_description: "这是随机抽奖时的获奖人数。如果您想按指定楼层开奖，请直接填写下面的'指定中奖楼层'项。"
+        fixed_floors: "指定中奖楼层"
+        fixed_floors_placeholder: "8, 18, 28"
+        fixed_floors_description: "（可选）填写此项将覆盖随机抽奖。请在此填写具体的楼层号，用英文逗号分隔。"
+        min_participants: "参与门槛"
+        backup_strategy: "后备策略"
+        backup_strategy_continue: "当开奖时人数不足，继续开奖"
+        backup_strategy_cancel: "当开奖时人数不足，取消活动"
+        additional_notes: "补充说明"
+        additional_notes_placeholder: "可以添加活动规则、参与条件等说明"
+        
+      # 验证错误
+      validation:
+        activity_name_required: "活动名称不能为空"
+        activity_name_too_long: "活动名称不能超过100个字符"
+        prize_description_required: "奖品说明不能为空"
+        draw_time_required: "开奖时间不能为空"
+        draw_time_past: "开奖时间不能早于当前时间"
+        winner_count_required: "获奖人数不能为空"
+        winner_count_invalid: "获奖人数必须大于0"
+        min_participants_required: "参与门槛不能为空"
+        min_participants_too_low: "参与门槛不能低于 %{min} 人"
+        backup_strategy_required: "请选择后备策略"
+        fixed_floors_invalid: "楼层号格式错误，请用英文逗号分隔数字"
+        
+      # 状态
+      status:
+        running: "抽奖中"
+        finished: "已开奖"
+        cancelled: "已取消"
+        locked: "已锁定"
+        
+      # 抽奖信息卡片
+      card:
+        title: "抽奖活动"
+        prize: "奖品"
+        draw_time: "开奖时间"
+        winner_count: "获奖人数"
+        min_participants: "参与门槛"
+        current_participants: "当前参与人数"
+        time_remaining: "剩余时间"
+        draw_method: "抽奖方式"
+        draw_method_random: "随机抽取"
+        draw_method_fixed: "指定楼层"
+        backup_strategy: "后备策略"
+        winners: "中奖名单"
+        floor_number: "第 %{number} 楼"
+        
+      # 按钮和操作
+      actions:
+        create_lottery: "发起抽奖"
+        edit_lottery: "编辑抽奖"
+        preview: "预览效果"
+        participate: "参与抽奖"
+        view_details: "查看详情"
+        
+      # 消息提示
+      messages:
+        creation_success: "抽奖活动创建成功！"
+        creation_failed: "创建失败：%{error}"
+        edit_success: "抽奖信息更新成功！"
+        edit_failed: "更新失败：%{error}"
+        post_locked: "该抽奖帖子已锁定，无法编辑"
+        no_permission: "您没有权限在此分类发起抽奖"
+        plugin_disabled: "抽奖功能已被管理员禁用"
+        
+      # 帮助信息
+      help:
+        how_to_participate: "如何参与抽奖？"
+        participation_rules: "在此帖子下方回复即可参与抽奖，每个用户只能参与一次（以最早回复为准）。"
+        draw_time_info: "系统将在设定的开奖时间自动进行抽奖。"
+        fairness_guarantee: "抽奖过程完全由系统自动执行，保证公平公正。"
