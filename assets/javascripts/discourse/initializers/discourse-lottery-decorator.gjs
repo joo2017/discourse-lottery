@@ -1,8 +1,8 @@
 import { apiInitializer } from "discourse/lib/api";
-import Lottery from "discourse/plugins/discourse-lottery/discourse/components/lottery";
+import LotteryIndex from "discourse/plugins/discourse-lottery/discourse/components/lottery/index";
 
 function initializeLotteryDecorator(api) {
-  api.decorateCookedElement(
+  api.decorateCooked(
     (cooked, helper) => {
       const lotteryNodes = cooked.querySelectorAll(".discourse-lottery");
       if (!lotteryNodes.length) {
@@ -48,7 +48,7 @@ function initializeLotteryDecorator(api) {
           // 渲染组件
           helper.renderGlimmer(
             wrapper,
-            <template><Lottery @lottery={{lotteryData}} /></template>
+            <template><LotteryIndex @lottery={{lotteryData}} /></template>
           );
         } catch (error) {
           console.error("Lottery decorator error:", error);
@@ -76,6 +76,7 @@ function extractLotteryDataFromNode(node) {
     const fallbackStrategy = node.getAttribute('data-lottery-fallback-strategy') || 'continue';
     const description = node.getAttribute('data-lottery-description') || '';
     const prizeImageUrl = node.getAttribute('data-lottery-prize-image-url') || '';
+    const specifiedWinners = node.getAttribute('data-lottery-specified-winners') || '';
 
     return {
       id: 'preview',
@@ -86,11 +87,17 @@ function extractLotteryDataFromNode(node) {
       draw_at: drawAt,
       winner_count: winnerCount,
       participant_threshold: participantThreshold,
+      participant_count: Math.floor(Math.random() * (participantThreshold + 5)), // 预览模式随机参与人数
       fallback_strategy: fallbackStrategy,
       description: description,
+      specified_winners: specifiedWinners,
+      winners: [], // 预览模式没有获奖者
       post: {
         id: 'preview',
-        topic_id: 'preview'
+        topic_id: 'preview',
+        user_id: null,
+        username: 'preview_user',
+        url: '#preview'
       }
     };
   } catch (error) {
@@ -104,5 +111,48 @@ export default apiInitializer("1.15.0", (api) => {
   
   if (siteSettings.lottery_enabled) {
     initializeLotteryDecorator(api);
+    
+    // 监听消息总线更新
+    api.onPageChange(() => {
+      const messageBus = api.container.lookup("service:message-bus");
+      
+      // 订阅全局抽奖更新
+      messageBus.subscribe("/lottery/global", (data) => {
+        // 处理全局抽奖状态更新
+        if (data.type === "status_change" && data.lottery_id) {
+          const lotteryElements = document.querySelectorAll(`[data-lottery-id="${data.lottery_id}"]`);
+          lotteryElements.forEach(element => {
+            // 触发重新渲染
+            element.removeAttribute('data-lottery-processed');
+            const event = new CustomEvent('lottery-update', { detail: data });
+            element.dispatchEvent(event);
+          });
+        }
+      });
+    });
+
+    // 添加抽奖相关的CSS类到body
+    api.onPageChange((url, title) => {
+      const hasLottery = document.querySelector('.discourse-lottery');
+      if (hasLottery) {
+        document.body.classList.add('has-lottery-content');
+      } else {
+        document.body.classList.remove('has-lottery-content');
+      }
+    });
+
+    // 为抽奖添加主题列表自定义字段支持
+    api.addPreloadedTopicListCustomField("lottery_draw_at");
+    
+    // 在主题列表中显示抽奖图标
+    api.addTopicTitleDecorator((topicModel, node) => {
+      if (topicModel.lottery_draw_at) {
+        const lotteryIcon = document.createElement('span');
+        lotteryIcon.className = 'topic-lottery-icon';
+        lotteryIcon.innerHTML = '<svg class="fa d-icon d-icon-gift svg-icon svg-string" xmlns="http://www.w3.org/2000/svg"><use href="#gift"></use></svg>';
+        lotteryIcon.title = '包含抽奖活动';
+        node.insertBefore(lotteryIcon, node.firstChild);
+      }
+    });
   }
 });
