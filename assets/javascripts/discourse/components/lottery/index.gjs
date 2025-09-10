@@ -1,149 +1,230 @@
 import Component from "@glimmer/component";
-import { service } from "@ember/service";
 import { tracked } from "@glimmer/tracking";
 import { action } from "@ember/object";
+import { service } from "@ember/service";
 import { modifier } from "ember-modifier";
-import { i18n } from "discourse-i18n";
-import { formatUsername } from "discourse/lib/utilities";
-import { htmlSafe } from "@ember/template";
-import avatar from "discourse/helpers/avatar";
-import formatDate from "discourse/helpers/format-date";
+import PluginOutlet from "discourse/components/plugin-outlet";
+import concatClass from "discourse/helpers/concat-class";
+import icon from "discourse/helpers/d-icon";
+import lazyHash from "discourse/helpers/lazy-hash";
+import replaceEmoji from "discourse/helpers/replace-emoji";
+import routeAction from "discourse/helpers/route-action";
+import { ajax } from "discourse/lib/ajax";
+import { popupAjaxError } from "discourse/lib/ajax-error";
+import LotteryDates from "./lottery-dates";
+import LotteryDescription from "./lottery-description";
+import LotteryParticipants from "./lottery-participants";
+import LotteryWinners from "./lottery-winners";
+import LotteryPrize from "./lottery-prize";
+import LotteryStatus from "./lottery-status";
+import LotteryMoreMenu from "./lottery-more-menu";
 
-export default class Lottery extends Component {
-  @service ajax;
+const StatusSeparator = <template>
+  <span class="separator">·</span>
+</template>;
+
+const InfoSection = <template>
+  <section class="lottery__section" ...attributes>
+    {{#if @icon}}
+      {{icon @icon}}
+    {{/if}}
+    {{yield}}
+  </section>
+</template>;
+
+export default class LotteryIndex extends Component {
+  @service currentUser;
   @service messageBus;
-  @service site;
+  @service modal;
+  @service router;
 
-  @tracked lottery = this.args.lottery;
+  @tracked lottery = null;
+  @tracked isLoading = false;
 
-  // Helper methods and getters
-  formatDate = formatDate;
-  formatUsername = formatUsername;
-  avatar = avatar;
-
-  get isMobile() {
-    return this.site.mobileView;
+  constructor() {
+    super(...arguments);
+    this.lottery = this.args.lottery;
+    this.setupMessageBus();
   }
 
-  get isRunning() { 
-    return this.lottery.status === "running"; 
-  }
+  setupMessageBus = modifier(() => {
+    if (!this.lottery?.post?.topic_id) return;
+    
+    const path = `/lottery/${this.lottery.post.topic_id}`;
+    this.messageBus.subscribe(path, (msg) => {
+      if (msg.id === this.lottery?.id) {
+        this.handleLotteryUpdate(msg);
+      }
+    });
 
-  get isFinished() { 
-    return this.lottery.status === "finished"; 
-  }
-
-  get isCancelled() { 
-    return this.lottery.status === "cancelled"; 
-  }
-
-  get statusText() {
-    return i18n(`lottery.status.${this.lottery.status}`);
-  }
-
-  get prizeHtml() {
-    // Note: Assuming prize description is simple text for security.
-    // If markdown is needed, a server-side cooking process would be required.
-    return htmlSafe(this.lottery.prize);
-  }
-
-  get descriptionHtml() {
-    return htmlSafe(this.lottery.description);
-  }
-
-  get fallbackStrategyText() {
-    return i18n(`lottery.fallback_strategy.${this.lottery.fallback_strategy}`);
-  }
-
-  setupMessageBus = modifier(
-    (element) => {
-      const channel = `/lottery/${this.lottery.post.topic_id}`;
-      this.messageBus.subscribe(channel, (msg) => {
-        if (msg.id === this.lottery.id) {
-          this.reloadLottery();
-        }
-      });
-
-      return () => this.messageBus.unsubscribe(channel);
-    },
-    { eager: false }
-  );
+    return () => this.messageBus.unsubscribe(path);
+  });
 
   @action
-  async reloadLottery() {
+  async handleLotteryUpdate(msg) {
     try {
-      const result = await this.ajax(`/lotteries/${this.lottery.id}.json`);
-      this.lottery = result.lottery;
+      const response = await ajax(`/lotteries/${msg.id}`);
+      this.lottery = response.lottery;
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error("Failed to reload lottery data", error);
+      console.error("Failed to update lottery:", error);
     }
   }
 
+  @action
+  async refreshLottery() {
+    if (!this.lottery?.id) return;
+    
+    this.isLoading = true;
+    try {
+      const response = await ajax(`/lotteries/${this.lottery.id}`);
+      this.lottery = response.lottery;
+    } catch (error) {
+      popupAjaxError(error);
+    } finally {
+      this.isLoading = false;
+    }
+  }
+
+  get localStartsAtTime() {
+    if (!this.lottery?.draw_at) return null;
+    return moment(this.lottery.draw_at);
+  }
+
+  get startsAtMonth() {
+    return this.localStartsAtTime?.format("MMM") || "";
+  }
+
+  get startsAtDay() {
+    return this.localStartsAtTime?.format("D") || "";
+  }
+
+  get lotteryName() {
+    return this.lottery?.name || "抽奖活动";
+  }
+
+  get isRunning() {
+    return this.lottery?.status === "running";
+  }
+
+  get isFinished() {
+    return this.lottery?.status === "finished";
+  }
+
+  get isCancelled() {
+    return this.lottery?.status === "cancelled";
+  }
+
+  get canActOnLottery() {
+    return (
+      this.currentUser &&
+      this.lottery?.post &&
+      (this.currentUser.staff ||
+        this.currentUser.id === this.lottery.post.user_id)
+    );
+  }
+
+  get statusClass() {
+    return `status-${this.lottery?.status || 'unknown'}`;
+  }
+
   <template>
-    <div class="discourse-lottery" {{this.setupMessageBus}}>
-      <div class="lottery-header">
-        <span class="lottery-name">{{this.lottery.name}}</span>
-        <span class="lottery-status {{this.lottery.status}}">{{this.statusText}}</span>
-      </div>
+    <div
+      class={{concatClass
+        "discourse-lottery"
+        (if @lottery "is-loaded" "is-loading")
+        (if @lottery "has-lottery")
+        this.statusClass
+      }}
+    >
+      <div class="discourse-lottery-widget">
+        {{#if @lottery}}
+          <header class="lottery-header" {{this.setupMessageBus}}>
+            <div class="lottery-date">
+              <div class="month">{{this.startsAtMonth}}</div>
+              <div class="day">{{this.startsAtDay}}</div>
+            </div>
+            <div class="lottery-info">
+              <span class="name">
+                {{replaceEmoji this.lotteryName}}
+              </span>
+              <div class="status-and-info">
+                <PluginOutlet
+                  @name="lottery-status-and-info"
+                  @outletArgs={{lazyHash
+                    lottery=@lottery
+                    Separator=StatusSeparator
+                    Status=(component LotteryStatus lottery=@lottery)
+                  }}
+                >
+                  <LotteryStatus @lottery={{@lottery}} />
+                  {{#if @lottery.prize}}
+                    <StatusSeparator />
+                    <span class="prize-info">{{@lottery.prize}}</span>
+                  {{/if}}
+                </PluginOutlet>
+              </div>
+            </div>
 
-      <div class="lottery-body">
-        <div class="lottery-prize">
-          <span class="label">{{i18n "lottery.ui.prize"}}</span>
-          <span class="value">{{this.prizeHtml}}</span>
-        </div>
-
-        {{#if this.lottery.prize_image_url}}
-          <div class="lottery-prize-image-wrapper">
-            <img 
-              src={{this.lottery.prize_image_url}} 
-              class="lottery-prize-image" 
-              alt={{i18n "lottery.ui.prize_image_alt"}}
+            <LotteryMoreMenu
+              @lottery={{@lottery}}
+              @canActOnLottery={{this.canActOnLottery}}
+              @onLotteryUpdated={{this.refreshLottery}}
+              @composePrivateMessage={{routeAction "composePrivateMessage"}}
             />
-          </div>
-        {{/if}}
+          </header>
 
-        {{#if this.lottery.description}}
-          <div class="lottery-description">
-            <span class="label">{{i18n "lottery.ui.description"}}</span>
-            <span class="value">{{this.descriptionHtml}}</span>
-          </div>
-        {{/if}}
+          <PluginOutlet
+            @name="lottery-info-sections"
+            @outletArgs={{lazyHash
+              lottery=@lottery
+              Section=(component InfoSection lottery=@lottery)
+              Dates=(component LotteryDates lottery=@lottery)
+              Description=(component LotteryDescription description=@lottery.description)
+              Prize=(component LotteryPrize lottery=@lottery)
+              Participants=(component LotteryParticipants lottery=@lottery)
+              Winners=(component LotteryWinners lottery=@lottery)
+            }}
+          >
+            <LotteryDates @lottery={{@lottery}} />
+            
+            {{#if @lottery.description}}
+              <LotteryDescription @description={{@lottery.description}} />
+            {{/if}}
 
-        {{#if this.isRunning}}
-          <div class="lottery-info">
-            <div class="info-item">
-              <span class="label">{{i18n "lottery.ui.draw_at"}}</span>
-              <span class="value">{{this.formatDate this.lottery.draw_at format="medium-with-time"}}</span>
-            </div>
-            <div class="info-item">
-              <span class="label">{{i18n "lottery.ui.winner_count"}}</span>
-              <span class="value">{{this.lottery.winner_count}}</span>
-            </div>
-            <div class="info-item">
-              <span class="label">{{i18n "lottery.ui.participant_threshold"}}</span>
-              <span class="value">{{this.lottery.participant_threshold}}</span>
-            </div>
-            <div class="info-item">
-              <span class="label">{{i18n "lottery.ui.fallback_strategy"}}</span>
-              <span class="value">{{this.fallbackStrategyText}}</span>
-            </div>
-          </div>
-        {{/if}}
+            {{#if @lottery.prize_image_url}}
+              <LotteryPrize @lottery={{@lottery}} />
+            {{/if}}
 
-        {{#if this.isFinished}}
-          <div class="lottery-winners">
-            <span class="label">{{i18n "lottery.ui.winners"}}</span>
-            <ul class="winner-list">
-              {{#each this.lottery.winners as |winner|}}
-                <li>
-                  <a href={{winner.path}} data-user-card={{winner.username}}>
-                    {{this.avatar winner imageSize="small"}}
-                    <span class="username">{{this.formatUsername winner.username}}</span>
-                  </a>
-                </li>
-              {{/each}}
-            </ul>
+            <InfoSection @icon="users">
+              <span class="threshold-info">
+                最少参与人数: {{@lottery.participant_threshold}}
+              </span>
+              <span class="separator">·</span>
+              <span class="winner-count">
+                获奖人数: {{@lottery.winner_count}}
+              </span>
+              {{#if @lottery.specified_winners}}
+                <span class="separator">·</span>
+                <span class="strategy-info">指定楼层开奖</span>
+              {{else}}
+                <span class="separator">·</span>
+                <span class="strategy-info">随机开奖</span>
+              {{/if}}
+            </InfoSection>
+
+            <LotteryParticipants @lottery={{@lottery}} />
+
+            {{#if this.isFinished}}
+              <LotteryWinners @lottery={{@lottery}} />
+            {{/if}}
+          </PluginOutlet>
+        {{else}}
+          <div class="lottery-placeholder">
+            {{#if this.isLoading}}
+              {{icon "spinner" class="fa-spin"}} 正在加载抽奖信息...
+            {{else}}
+              抽奖信息不可用
+            {{/if}}
           </div>
         {{/if}}
       </div>
