@@ -1,0 +1,73 @@
+// 添加到现有 lottery.scss 文件末尾
+
+// 预览模式样式
+.lottery-preview-wrapper {
+  border: 2px dashed var(--primary-low);
+  border-radius: var(--d-border-radius);
+  padding: 1em;
+  margin: 1em 0;
+  background-color: var(--primary-very-low);
+  
+  .lottery-preview-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75em;
+    padding-bottom: 0.5em;
+    border-bottom: 1px solid var(--primary-low);
+    
+    strong {
+      font-size: var(--font-up-1);
+      color: var(--primary);
+    }
+    
+    .lottery-preview-status {
+      background-color: var(--tertiary);
+      color: var(--secondary);
+      padding: 0.2em 0.5em;
+      border-radius: 0.8em;
+      font-size: var(--font-down-1);
+    }
+  }
+  
+  .lottery-preview-content {
+    div {
+      margin-bottom: 0.5em;
+      
+      strong {
+        color: var(--primary-medium);
+        margin-right: 0.5em;
+      }
+    }
+  }
+}
+
+// 错误和占位符样式
+.lottery-placeholder,
+.lottery-error {
+  padding: 1em;
+  text-align: center;
+  border: 1px solid var(--primary-low);
+  border-radius: var(--d-border-radius);
+  background-color: var(--primary-very-low);
+  color: var(--primary-medium);
+  font-style: italic;
+}
+
+.lottery-error {
+  border-color: var(--danger);
+  background-color: var(--danger-low);
+  color: var(--danger);
+}
+
+// 防止组件包装器出现样式问题
+.lottery-component-wrapper {
+  width: 100%;
+}
+
+// 确保已处理的节点不被重复处理
+.discourse-lottery[data-lottery-processed="true"] {
+  .lottery-preview-wrapper {
+    display: none;
+  }
+}
