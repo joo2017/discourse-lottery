@@ -1,0 +1,33 @@
+import { tracked } from "@glimmer/tracking";
+import EmberObject from "@ember/object";
+
+export default class DiscoursePostLotteryLottery {
+  static create(args = {}) {
+    return new DiscoursePostLotteryLottery(args);
+  }
+
+  @tracked name;
+  @tracked prize_description;
+  @tracked draw_time;
+  @tracked winner_count;
+  @tracked min_participants;
+  @tracked draw_method;
+  @tracked backup_strategy;
+  @tracked specified_floors;
+  @tracked status;
+  @tracked description;
+
+  constructor(args = {}) {
+    this.id = args.id;
+    this.name = args.name;
+    this.prize_description = args.prize_description;
+    this.draw_time = args.draw_time;
+    this.winner_count = args.winner_count || 1;
+    this.min_participants = args.min_participants || 1;
+    this.draw_method = args.draw_method || "random";
+    this.backup_strategy = args.backup_strategy || "continue";
+    this.specified_floors = args.specified_floors;
+    this.status = args.status || "running";
+    this.description = args.description;
+  }
+}
