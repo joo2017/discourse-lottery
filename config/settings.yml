@@ -1,29 +1,11 @@
-zh_CN:
-  js:
-    discourse_lottery:
-      builder_modal:
-        attach: "创建抽奖"
-        create_lottery_title: "创建抽奖活动"
-        create: "创建"
-        name:
-          label: "抽奖名称"
-          placeholder: "输入抽奖活动名称"
-        prize:
-          label: "奖品说明"
-          placeholder: "描述奖品内容"
-        draw_time:
-          label: "开奖时间"
-        winner_count:
-          label: "获奖人数"
-        min_participants:
-          label: "参与门槛"
-        method:
-          label: "抽奖方式"
-          random: "随机抽取"
-          floors: "指定楼层"
-        floors:
-          label: "指定楼层"
-          placeholder: "例如：8,18,28"
-        description:
-          label: "补充说明"
-          placeholder: "可选的补充说明"
+discourse_lottery:
+  discourse_lottery_enabled:
+    default: false
+    client: true
+  discourse_lottery_allowed_on_groups:
+    client: true
+    type: group_list
+    list_type: compact
+    default: ""
+    allow_any: false
+    refresh: true
