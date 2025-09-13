@@ -11,29 +11,22 @@ enabled_site_setting :discourse_lottery_enabled
 
 # 注册资源路径
 register_asset "stylesheets/common/discourse-lottery.scss"
-register_asset "stylesheets/desktop/discourse-lottery.scss", :desktop
-register_asset "stylesheets/mobile/discourse-lottery.scss", :mobile
 
 # 加载引擎
 load File.expand_path("lib/discourse_lottery/engine.rb", __dir__)
 
 after_initialize do
-  # 加载所有扩展模块
-  require_relative "lib/discourse_lottery/user_extension"
-  require_relative "lib/discourse_lottery/post_extension"
+  # 加载扩展模块（只有在文件存在时才加载）
+  require_relative "lib/discourse_lottery/user_extension" if File.exist?(File.expand_path("lib/discourse_lottery/user_extension.rb", __dir__))
   
-  # 扩展核心模型
+  # 扩展User模型
   User.class_eval do
-    include DiscourseLottery::UserExtension
-  end
-  
-  Post.class_eval do
-    prepend DiscourseLottery::PostExtension
+    include DiscourseLottery::UserExtension if defined?(DiscourseLottery::UserExtension)
   end
   
   # 添加序列化器字段
   add_to_serializer(:current_user, :can_create_discourse_lottery) do
-    object.can_create_discourse_lottery?
+    object.respond_to?(:can_create_discourse_lottery?) ? object.can_create_discourse_lottery? : false
   end
   
   # 注册路由
