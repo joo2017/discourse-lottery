@@ -1,0 +1,33 @@
+.discourse-post-lottery {
+  .discourse-post-lottery-widget {
+    border-width: 1px;
+  }
+
+  .lottery-info {
+    .name {
+      max-width: 75vw;
+    }
+  }
+
+  .lottery-actions {
+    .participate-button {
+      width: 100%;
+      margin-right: 0;
+      margin-bottom: 0.5em;
+    }
+
+    .participation-hint {
+      text-align: center;
+      width: 100%;
+    }
+  }
+
+  .lottery-participants-container {
+    grid-template-columns: 1fr;
+    text-align: center;
+
+    .lottery-participants-icon {
+      margin-bottom: 0.5em;
+    }
+  }
+}
