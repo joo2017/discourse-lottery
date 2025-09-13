@@ -10,6 +10,10 @@ import RadioButton from "discourse/components/radio-button";
 import { i18n } from "discourse-i18n";
 import { fn, mut } from "@ember/helper";
 
+// --- 关键改动：导入 eq 帮助函数 ---
+import { eq } from "truth-helpers";
+// ------------------------------------
+
 export default class PostLotteryBuilder extends Component {
   @service siteSettings;
   @service store;
@@ -18,6 +22,13 @@ export default class PostLotteryBuilder extends Component {
 
   get lottery() {
     return this.args.model.lottery;
+  }
+  
+  constructor() {
+    super(...arguments);
+    // 为 lottery 模型设置默认值，避免模板在初始渲染时访问 undefined
+    // 将默认抽奖方式设置为 'random'
+    this.lottery.draw_method = this.lottery.draw_method || "random";
   }
 
   @action
@@ -95,11 +106,14 @@ export default class PostLotteryBuilder extends Component {
 
           <div class="lottery-field">
             <label>{{i18n "discourse_lottery.builder_modal.method.label"}}</label>
-            <RadioButton @name="method" @value="random" @selection={{this.lottery.draw_method}} @onChange={{fn (mut this.lottery.draw_method)}} />
-            <span>{{i18n "discourse_lottery.builder_modal.method.random"}}</span>
-            <br>
-            <RadioButton @name="method" @value="floors" @selection={{this.lottery.draw_method}} @onChange={{fn (mut this.lottery.draw_method)}} />
-            <span>{{i18n "discourse_lottery.builder_modal.method.floors"}}</span>
+            <label class="radio-label">
+              <RadioButton @name="method" @value="random" @selection={{this.lottery.draw_method}} @onChange={{fn (mut this.lottery.draw_method)}} />
+              <span>{{i18n "discourse_lottery.builder_modal.method.random"}}</span>
+            </label>
+            <label class="radio-label">
+              <RadioButton @name="method" @value="floors" @selection={{this.lottery.draw_method}} @onChange={{fn (mut this.lottery.draw_method)}} />
+              <span>{{i18n "discourse_lottery.builder_modal.method.floors"}}</span>
+            </label>
           </div>
 
           {{#if (eq this.lottery.draw_method "floors")}}
