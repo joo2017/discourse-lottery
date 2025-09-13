@@ -1,9 +1,10 @@
 # frozen_string_literal: true
 
-module DiscoursePostLottery
+module DiscourseLottery
+  PLUGIN_NAME = "discourse-lottery"
+
   class Engine < ::Rails::Engine
-    engine_name "discourse_post_lottery"
-    isolate_namespace DiscoursePostLottery
-    config.autoload_paths << File.join(config.root, "lib")
+    engine_name PLUGIN_NAME
+    isolate_namespace DiscourseLottery
   end
 end
