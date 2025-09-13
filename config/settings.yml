@@ -1,0 +1,31 @@
+discourse_lottery:
+  lottery_enabled:
+    default: false
+    client: true
+  lottery_allowed_on_groups:
+    client: true
+    type: group_list
+    list_type: compact
+    default: ""
+    allow_any: false
+    refresh: true
+  lottery_min_participants_global:
+    default: 5
+    client: true
+    min: 1
+  lottery_post_lock_delay_minutes:
+    default: 30
+    client: true
+    min: 0
+  lottery_excluded_groups:
+    type: group_list
+    list_type: compact
+    client: true
+    default: "staff"
+  display_post_lottery_date_on_topic_title:
+    default: true
+    client: true
+  lottery_categories:
+    type: category_list
+    client: true
+    default: ""
