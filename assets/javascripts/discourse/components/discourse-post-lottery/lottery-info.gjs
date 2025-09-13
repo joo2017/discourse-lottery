@@ -1,77 +1,57 @@
+// assets/javascripts/discourse/components/discourse-post-lottery/lottery-info.gjs
 import Component from "@glimmer/component";
+import { service } from "@ember/service";
 import icon from "discourse/helpers/d-icon";
+import { i18n } from "discourse-i18n";
 
 export default class LotteryInfo extends Component {
-  get drawTime() {
-    return moment(this.args.lottery.drawTime).tz(this.timezone);
+  @service siteSettings;
+
+  get formattedDrawTime() {
+    if (!this.args.lottery.drawTime) return null;
+    return moment(this.args.lottery.drawTime).format("YYYY-MM-DD HH:mm");
   }
 
-  get timezone() {
-    return this.args.lottery.timezone || "UTC";
-  }
-
-  get timeRemaining() {
-    if (this.args.lottery.expired) return null;
-
-    const now = moment();
-    const drawTime = this.drawTime;
-    const diff = drawTime.diff(now);
-
-    if (diff <= 0) return "即将开奖";
-
-    const duration = moment.duration(diff);
-    const days = Math.floor(duration.asDays());
-    const hours = duration.hours();
-    const minutes = duration.minutes();
-
-    if (days > 0) return `${days}天${hours}小时后开奖`;
-    if (hours > 0) return `${hours}小时${minutes}分钟后开奖`;
-    return `${minutes}分钟后开奖`;
+  get statusText() {
+    const status = this.args.lottery.status;
+    return i18n(`discourse_lottery.status.${status}`);
   }
 
   <template>
-    <section class="lottery__section lottery-draw-info">
-      <div class="lottery-prize">
+    <div class="lottery-info-card">
+      <div class="lottery-header">
         {{icon "gift"}}
-        <div class="prize-details">
-          <div class="prize-name">{{@lottery.prizeName}}</div>
-          {{#if @lottery.prizeImage}}
-            <div class="prize-image">
-              <img src={{@lottery.prizeImage}} alt={{@lottery.prizeName}} />
-            </div>
-          {{/if}}
-          {{#if @lottery.description}}
-            <div class="prize-description">{{@lottery.description}}</div>
-          {{/if}}
-        </div>
+        <h3 class="lottery-title">{{@lottery.name}}</h3>
       </div>
-
-      <div class="lottery-timing">
-        {{icon "clock"}}
-        <div class="timing-details">
-          <div class="draw-time">
-            开奖时间：{{this.drawTime.format("YYYY-MM-DD HH:mm")}}
+      
+      <div class="lottery-details">
+        {{#if this.formattedDrawTime}}
+          <div class="lottery-draw-time">
+            {{icon "clock"}}
+            {{!-- 这是第26行 - 替换原来第22行的错误代码 --}}
+            <span>{{i18n "discourse_lottery.draw_time"}}：{{this.formattedDrawTime}}</span>
           </div>
-          {{#if this.timeRemaining}}
-            <div class="time-remaining">{{this.timeRemaining}}</div>
-          {{/if}}
+        {{/if}}
+        
+        <div class="lottery-status">
+          {{icon "flag"}}
+          <span>{{i18n "discourse_lottery.status_label"}}：{{this.statusText}}</span>
         </div>
-      </div>
-
-      <div class="lottery-rules">
-        {{icon "info-circle"}}
-        <div class="rules-details">
-          <div class="winner-count">获奖人数：{{@lottery.winnerCount}}人</div>
-          <div class="min-participants">参与门槛：{{@lottery.minParticipants}}人</div>
-          <div class="draw-type">
-            {{#if (eq @lottery.drawType "random")}}
-              随机抽奖
-            {{else}}
-              指定楼层：{{@lottery.fixedFloors}}
-            {{/if}}
+        
+        {{#if @lottery.prizeDescription}}
+          <div class="lottery-prize">
+            {{icon "trophy"}}
+            <span>{{i18n "discourse_lottery.prize_label"}}：{{@lottery.prizeDescription}}</span>
           </div>
-        </div>
+        {{/if}}
+
+        {{#if @lottery.participantCount}}
+          <div class="lottery-participants">
+            {{icon "users"}}
+            <span>{{i18n "discourse_lottery.participant_count" count=@lottery.participantCount}}</span>
+          </div>
+        {{/if}}
       </div>
-    </section>
+    </div>
   </template>
 }
