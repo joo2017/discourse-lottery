@@ -1,0 +1,10 @@
+# config/locales/client.zh_CN.yml
+zh_CN:
+  js:
+    discourse_lottery:
+      draw_time: "开奖时间"
+      status:
+        running: "进行中"
+        finished: "已结束"
+        cancelled: "已取消"
+      prize: "奖品"
