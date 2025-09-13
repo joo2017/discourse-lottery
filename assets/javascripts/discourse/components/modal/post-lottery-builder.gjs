@@ -8,6 +8,7 @@ import DModal from "discourse/components/d-modal";
 import DateTimeInput from "discourse/components/date-time-input";
 import RadioButton from "discourse/components/radio-button";
 import { i18n } from "discourse-i18n";
+import { fn, mut } from "@ember/helper";
 
 export default class PostLotteryBuilder extends Component {
   @service siteSettings;
