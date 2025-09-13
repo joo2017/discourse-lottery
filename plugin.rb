@@ -18,6 +18,7 @@ register_svg_icon "gift"
 register_svg_icon "trophy"
 register_svg_icon "dice"
 register_svg_icon "users"
+register_module("ember-math-helpers", "ember-math-helpers/dist/modules/helpers.js", type: :es6)
 
 module ::DiscoursePostLottery
   PLUGIN_NAME = "discourse-post-lottery"
