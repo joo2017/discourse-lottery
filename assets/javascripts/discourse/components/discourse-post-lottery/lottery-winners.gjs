@@ -1,7 +1,7 @@
 import Component from "@glimmer/component";
 import icon from "discourse/helpers/d-icon";
 import avatar from "discourse/helpers/avatar";
-
+import { add } from "ember-math-helpers";
 export default class LotteryWinners extends Component {
   <template>
     {{#if @lottery.winners}}
