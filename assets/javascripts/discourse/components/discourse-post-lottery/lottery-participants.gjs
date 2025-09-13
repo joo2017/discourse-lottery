@@ -1,6 +1,7 @@
 import Component from "@glimmer/component";
 import icon from "discourse/helpers/d-icon";
 import avatar from "discourse/helpers/avatar";
+import { sub } from "ember-math-helpers"; 
 
 export default class LotteryParticipants extends Component {
   get participantCount() {
