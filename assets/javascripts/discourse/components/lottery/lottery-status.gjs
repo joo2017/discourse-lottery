@@ -84,6 +84,11 @@ export default class LotteryStatus extends Component {
     };
   }
 
+  get remainingParticipants() {
+    if (!this.participantProgress) return 0;
+    return Math.max(0, this.participantProgress.threshold - this.participantProgress.current);
+  }
+
   <template>
     <div class={{this.statusClass}}>
       <div class="status-main">
@@ -117,7 +122,7 @@ export default class LotteryStatus extends Component {
 
           {{#unless this.participantProgress.met}}
             <div class="progress-hint">
-              还需 {{sub this.participantProgress.threshold this.participantProgress.current}} 人参与
+              还需 {{this.remainingParticipants}} 人参与
             </div>
           {{/unless}}
         </div>
