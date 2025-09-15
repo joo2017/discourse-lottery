@@ -13,7 +13,7 @@ register_svg_icon "gift"
 
 module ::DiscourseLottery
   PLUGIN_NAME = "discourse-lottery"
-  TOPIC_LOTTERY_DRAW_AT = "TopicLotteryDrawAt"
+  TOPIC_LOTTERY_DRAW_AT = "lottery_draw_at"
 end
 
 require_relative "lib/discourse_lottery/engine"
@@ -38,9 +38,21 @@ after_initialize do
     @lottery ||= DiscourseLottery::Lottery.find_by(post_id: self.id)
   end
 
+  # 安全地添加自定义字段到主题列表
+  if TopicList.respond_to?(:preloaded_topic_custom_fields)
+    TopicList.preloaded_topic_custom_fields << DiscourseLottery::TOPIC_LOTTERY_DRAW_AT
+  end
+
   # Serialize the lottery data with the post
   add_to_serializer(:post, :lottery, include_condition: -> { SiteSetting.lottery_enabled && object.is_first_post? && object.lottery.present? && !object.deleted_at }) do
     DiscourseLottery::LotterySerializer.new(object.lottery, scope: scope, root: false)
+  end
+
+  # 添加到主题列表序列化器
+  add_to_serializer(:topic_list_item, :lottery_draw_at, include_condition: -> { 
+    object.custom_fields[DiscourseLottery::TOPIC_LOTTERY_DRAW_AT].present? 
+  }) do
+    object.custom_fields[DiscourseLottery::TOPIC_LOTTERY_DRAW_AT]
   end
 
   # Hooks for creating/editing lotteries
@@ -63,11 +75,5 @@ after_initialize do
       Jobs.cancel_scheduled_job(:execute_lottery_draw, lottery_id: post.id)
       Jobs.cancel_scheduled_job(:lock_lottery_post, post_id: post.id)
     end
-  end
-
-  # Add custom field to topic list for potential future features like sorting
-  add_preloaded_topic_list_custom_field DiscourseLottery::TOPIC_LOTTERY_DRAW_AT
-  add_to_serializer(:topic_list_item, :lottery_draw_at, include_condition: -> { object.custom_fields[DiscourseLottery::TOPIC_LOTTERY_DRAW_AT].present? }) do
-    object.custom_fields[DiscourseLottery::TOPIC_LOTtery_DRAW_AT]
   end
 end
