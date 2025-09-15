@@ -1,20 +1,13 @@
 plugins:
   lottery_enabled:
-    default: true
+    default: false
     client: true
-    label: "lottery.settings.enabled"
   lottery_min_participants_global:
     default: 5
     min: 1
+    max: 100
     client: true
-    label: "lottery.settings.min_participants_global"
   lottery_post_lock_delay_minutes:
-    default: 10
+    default: 60
     min: 0
-    client: false
-    label: "lottery.settings.post_lock_delay_minutes"
-  lottery_excluded_groups:
-    type: group_list
-    default: "1|2" # staff|moderators are default excluded
-    client: false
-    label: "lottery.settings.excluded_groups"
+    max: 1440
