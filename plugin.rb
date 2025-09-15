@@ -38,9 +38,20 @@ after_initialize do
     @lottery ||= DiscourseLottery::Lottery.find_by(post_id: self.id)
   end
 
-  # 安全地添加自定义字段到主题列表
+  # 注册自定义字段类型
+  register_topic_custom_field_type(DiscourseLottery::TOPIC_LOTTERY_DRAW_AT, :string)
+
+  # 确保自定义字段被预加载到主题列表
+  if Topic.respond_to?(:preloaded_custom_fields)
+    Topic.preloaded_custom_fields << DiscourseLottery::TOPIC_LOTTERY_DRAW_AT
+  end
+
   if TopicList.respond_to?(:preloaded_topic_custom_fields)
     TopicList.preloaded_topic_custom_fields << DiscourseLottery::TOPIC_LOTTERY_DRAW_AT
+  end
+
+  if Site.respond_to?(:preloaded_topic_custom_fields)
+    Site.preloaded_topic_custom_fields << DiscourseLottery::TOPIC_LOTTERY_DRAW_AT
   end
 
   # Serialize the lottery data with the post
@@ -50,9 +61,16 @@ after_initialize do
 
   # 添加到主题列表序列化器
   add_to_serializer(:topic_list_item, :lottery_draw_at, include_condition: -> { 
-    object.custom_fields[DiscourseLottery::TOPIC_LOTTERY_DRAW_AT].present? 
+    object.custom_fields && object.custom_fields[DiscourseLottery::TOPIC_LOTTERY_DRAW_AT].present? 
   }) do
     object.custom_fields[DiscourseLottery::TOPIC_LOTTERY_DRAW_AT]
+  end
+
+  # 添加到主题视图序列化器
+  add_to_serializer(:topic_view, :lottery_draw_at, include_condition: -> { 
+    object.topic.custom_fields && object.topic.custom_fields[DiscourseLottery::TOPIC_LOTTERY_DRAW_AT].present? 
+  }) do
+    object.topic.custom_fields[DiscourseLottery::TOPIC_LOTTERY_DRAW_AT]
   end
 
   # Hooks for creating/editing lotteries
@@ -72,6 +90,10 @@ after_initialize do
   on(:post_destroyed) do |post|
     if SiteSetting.lottery_enabled && post.lottery
       post.lottery.destroy!
+      # 清理主题自定义字段
+      post.topic.custom_fields.delete(DiscourseLottery::TOPIC_LOTTERY_DRAW_AT)
+      post.topic.save_custom_fields
+      
       Jobs.cancel_scheduled_job(:execute_lottery_draw, lottery_id: post.id)
       Jobs.cancel_scheduled_job(:lock_lottery_post, post_id: post.id)
     end
