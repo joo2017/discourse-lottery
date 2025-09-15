@@ -3,13 +3,16 @@
 # name: discourse-lottery
 # about: A plugin to create and manage automated lotteries in Discourse topics.
 # version: 1.0
-# author: Your Name (based on discourse-lottery-v6 blueprint)
+# author: Your Name
 # url: https://github.com/your-repo/discourse-lottery
 
 enabled_site_setting :lottery_enabled
 
 register_asset "stylesheets/common/lottery.scss"
 register_svg_icon "gift"
+
+# 注册国际化文件
+register_locale "config/locales/client.zh_CN.yml", :zh_CN
 
 module ::DiscourseLottery
   PLUGIN_NAME = "discourse-lottery"
@@ -19,56 +22,33 @@ end
 require_relative "lib/discourse_lottery/engine"
 
 after_initialize do
-  # Libs & Services
+  # 其他代码保持不变...
   require_relative "lib/post_lottery_extension"
   require_relative "lib/discourse_lottery/lottery_creator"
   require_relative "lib/discourse_lottery/lottery_manager"
   require_relative "lib/discourse_lottery/lottery_validator"
 
-  # Jobs
-  require_relative "jobs/regular/execute_lottery_draw"
-  require_relative "jobs/regular/lock_lottery_post"
+  require_relative "app/jobs/regular/execute_lottery_draw"
+  require_relative "app/jobs/regular/lock_lottery_post"
 
-  # Core extensions
   reloadable_patch do |plugin|
-    Post.prepend(DiscourseLottery::PostLotteryExtension)
+    Post.prepend(DiscourseLottery::PostLotteryExtension) if defined?(DiscourseLottery::PostLotteryExtension)
   end
 
   add_to_class(:post, :lottery) do
     @lottery ||= DiscourseLottery::Lottery.find_by(post_id: self.id)
   end
 
-  # 注册自定义字段类型
   register_topic_custom_field_type(DiscourseLottery::TOPIC_LOTTERY_DRAW_AT, :string)
 
-  # 使用官方推荐的方法预加载自定义字段
   TopicList.preloaded_custom_fields << DiscourseLottery::TOPIC_LOTTERY_DRAW_AT
 
-  # 使用官方方法预加载到主题列表
   add_preloaded_topic_list_custom_field(DiscourseLottery::TOPIC_LOTTERY_DRAW_AT)
 
-  # Serialize the lottery data with the post
   add_to_serializer(:post, :lottery, include_condition: -> { SiteSetting.lottery_enabled && object.is_first_post? && object.lottery.present? && !object.deleted_at }) do
     DiscourseLottery::LotterySerializer.new(object.lottery, scope: scope, root: false)
   end
 
-  # 主题列表序列化器 - 使用预加载的自定义字段
-  add_to_serializer(:topic_list_item, :lottery_draw_at, include_condition: -> { 
-    SiteSetting.lottery_enabled && 
-    object.custom_fields[DiscourseLottery::TOPIC_LOTTERY_DRAW_AT].present?
-  }) do
-    object.custom_fields[DiscourseLottery::TOPIC_LOTTERY_DRAW_AT]
-  end
-
-  # 主题视图序列化器
-  add_to_serializer(:topic_view, :lottery_draw_at, include_condition: -> { 
-    SiteSetting.lottery_enabled &&
-    object.topic.custom_fields[DiscourseLottery::TOPIC_LOTTERY_DRAW_AT].present?
-  }) do
-    object.topic.custom_fields[DiscourseLottery::TOPIC_LOTTERY_DRAW_AT]
-  end
-
-  # Hooks for creating/editing lotteries
   on(:post_created) do |post|
     if SiteSetting.lottery_enabled && post.is_first_post?
       DiscourseLottery::LotteryCreator.create(post)
@@ -76,7 +56,6 @@ after_initialize do
   end
 
   on(:post_edited) do |post|
-    # A locked post means the lottery "regret period" is over.
     if SiteSetting.lottery_enabled && post.is_first_post? && post.lottery && !post.locked?
       DiscourseLottery::LotteryCreator.create(post)
     end
@@ -85,7 +64,6 @@ after_initialize do
   on(:post_destroyed) do |post|
     if SiteSetting.lottery_enabled && post.lottery
       post.lottery.destroy!
-      # 清理主题自定义字段
       post.topic.custom_fields.delete(DiscourseLottery::TOPIC_LOTTERY_DRAW_AT)
       post.topic.save_custom_fields
       
