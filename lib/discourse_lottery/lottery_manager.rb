@@ -80,6 +80,10 @@ module DiscourseLottery
 
       @lottery.update!(status: :finished)
 
+      # 清理主题自定义字段，因为抽奖已结束
+      @lottery.post.topic.custom_fields.delete(DiscourseLottery::TOPIC_LOTTERY_DRAW_AT)
+      @lottery.post.topic.save_custom_fields
+
       update_tags(I18n.t("lottery.tags.finished"))
       announce_winners(winner_posts)
       send_winner_pms(winner_posts)
@@ -89,6 +93,11 @@ module DiscourseLottery
 
     def cancel_lottery(reason)
       @lottery.update!(status: :cancelled)
+      
+      # 清理主题自定义字段
+      @lottery.post.topic.custom_fields.delete(DiscourseLottery::TOPIC_LOTTERY_DRAW_AT)
+      @lottery.post.topic.save_custom_fields
+      
       update_tags(I18n.t("lottery.tags.cancelled"))
       announce_cancellation(reason)
       @lottery.publish_update!
