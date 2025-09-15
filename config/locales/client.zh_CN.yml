@@ -1,0 +1,48 @@
+zh_CN:
+  js:
+    lottery:
+      ui:
+        prize: "奖品"
+        description: "活动描述"
+        draw_at: "开奖时间"
+        winner_count: "获奖人数"
+        participant_threshold: "参与门槛"
+        fallback_strategy: "应对策略"
+        prize_image_alt: "奖品图片"
+        winners_announced: "获奖者已公布"
+        
+      builder:
+        title: "创建抽奖活动"
+        edit_title: "编辑抽奖活动"
+        attach: "插入抽奖"
+        name_label: "活动名称"
+        prize_label: "奖品描述"
+        prize_image_label: "奖品图片"
+        prize_image_url_desc: "输入图片URL地址"
+        or_upload_file: "或者上传文件"
+        draw_at_label: "开奖时间"
+        draw_at_locked_notice: "开奖时间不能修改"
+        winner_count_label: "获奖人数"
+        winner_count_desc: "设置中奖人数"
+        specified_winners_label: "指定中奖楼层"
+        specified_winners_desc: "用逗号分隔楼层号，如：8,18,28"
+        participant_threshold_label: "参与门槛"
+        threshold_error: "参与门槛不能少于%{count}人"
+        threshold_locked_notice: "参与门槛不能修改"
+        fallback_strategy_label: "人数不足时"
+        strategy_locked_notice: "应对策略不能修改"
+        description_label: "活动描述"
+        create_button: "创建抽奖"
+        update_button: "更新抽奖"
+        
+      status:
+        running: "进行中"
+        finished: "已结束"
+        cancelled: "已取消"
+        
+      fallback_strategy:
+        continue: "继续开奖"
+        cancel: "取消抽奖"
+        
+      edit_reason:
+        updated: "更新抽奖设置"
