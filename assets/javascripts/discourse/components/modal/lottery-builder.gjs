@@ -13,6 +13,7 @@ import { popupAjaxError } from "discourse/lib/ajax-error";
 import moment from "moment";
 import { i18n } from "discourse-i18n";
 import { cook } from "discourse/lib/text";
+import LotteryPreview from "../lottery/preview";
 
 export default class LotteryBuilder extends Component {
   @service siteSettings;
@@ -32,6 +33,7 @@ export default class LotteryBuilder extends Component {
   @tracked uploading = false;
   @tracked saving = false;
   @tracked validationErrors = {};
+  @tracked showPreview = false;
 
   get isEditMode() {
     return this.args.model?.editMode && this.args.model?.lottery;
@@ -47,6 +49,20 @@ export default class LotteryBuilder extends Component {
     return this.isEditMode
       ? "lottery.builder.update_button"
       : "lottery.builder.create_button";
+  }
+
+  // 实时预览数据
+  get previewData() {
+    return {
+      name: this.name || "抽奖活动",
+      prize: this.prize || "奖品描述",
+      prizeImageUrl: this.prizeImageUrl,
+      drawAt: this.drawAt,
+      winnerCount: this.winnerCount,
+      participantThreshold: this.participantThreshold,
+      fallbackStrategy: this.fallbackStrategy,
+      description: this.description
+    };
   }
 
   initDrawAt() {
@@ -223,6 +239,11 @@ export default class LotteryBuilder extends Component {
   }
 
   @action
+  togglePreview() {
+    this.showPreview = !this.showPreview;
+  }
+
+  @action
   onFileChange(event) {
     const file = event.target.files[0];
     if (!file) return;
@@ -392,159 +413,193 @@ export default class LotteryBuilder extends Component {
       class="lottery-builder-modal"
     >
       <:body>
-        <form class="lottery-builder-form">
-          <div class="lottery-field">
-            <label for="lottery-name">{{i18n "lottery.builder.name_label"}}</label>
-            <Input
-              @value={{this.name}}
-              @input={{this.onNameChange}}
-              id="lottery-name"
-              class="d-input {{if this.validationErrors.name 'error'}}"
-              placeholder="请输入活动名称"
-            />
-            {{#if this.validationErrors.name}}
-              <div class="validation-error">{{this.validationErrors.name}}</div>
-            {{/if}}
+        <div class="lottery-builder-container">
+          <div class="lottery-builder-tabs">
+            <button
+              type="button"
+              class="tab-button {{unless this.showPreview 'active'}}"
+              {{on "click" (fn (mut this.showPreview) false)}}
+            >
+              表单设置
+            </button>
+            <button
+              type="button"
+              class="tab-button {{if this.showPreview 'active'}}"
+              {{on "click" this.togglePreview}}
+            >
+              实时预览
+            </button>
           </div>
 
-          <div class="lottery-field">
-            <label for="lottery-prize">{{i18n "lottery.builder.prize_label"}}</label>
-            <Input
-              @value={{this.prize}}
-              @input={{this.onPrizeChange}}
-              id="lottery-prize"
-              class="d-input {{if this.validationErrors.prize 'error'}}"
-              placeholder="请输入奖品描述"
-            />
-            {{#if this.validationErrors.prize}}
-              <div class="validation-error">{{this.validationErrors.prize}}</div>
-            {{/if}}
-          </div>
+          {{#unless this.showPreview}}
+            <form class="lottery-builder-form">
+              <div class="lottery-field">
+                <label for="lottery-name">{{i18n "lottery.builder.name_label"}}</label>
+                <Input
+                  @value={{this.name}}
+                  @input={{this.onNameChange}}
+                  id="lottery-name"
+                  class="d-input {{if this.validationErrors.name 'error'}}"
+                  placeholder="请输入活动名称"
+                />
+                {{#if this.validationErrors.name}}
+                  <div class="validation-error">{{this.validationErrors.name}}</div>
+                {{/if}}
+              </div>
 
-          <div class="lottery-field">
-            <label for="lottery-prize-image">{{i18n "lottery.builder.prize_image_label"}}</label>
-            <p class="description">{{i18n "lottery.builder.prize_image_url_desc"}}</p>
-            <Input
-              @value={{this.prizeImageUrl}}
-              @input={{this.onPrizeImageUrlChange}}
-              id="lottery-prize-image"
-              placeholder="https://example.com/image.jpg"
-              class="d-input"
-            />
-            <br />
-            <span class="description">{{i18n "lottery.builder.or_upload_file"}}</span>
-            <input
-              type="file"
-              accept="image/*"
-              {{on "change" this.onFileChange}}
-              class="d-input"
-              disabled={{this.uploading}}
-            />
-            {{#if this.uploading}}
-              <div class="upload-progress">{{i18n "upload.uploading"}}</div>
-            {{/if}}
-            {{#if this.prizeImageUrl}}
-              <div class="upload-preview">
-                <img
-                  src={{this.prizeImageUrl}}
-                  alt="Prize preview"
-                  style="max-width: 200px; margin-top: 10px;"
+              <div class="lottery-field">
+                <label for="lottery-prize">{{i18n "lottery.builder.prize_label"}}</label>
+                <Input
+                  @value={{this.prize}}
+                  @input={{this.onPrizeChange}}
+                  id="lottery-prize"
+                  class="d-input {{if this.validationErrors.prize 'error'}}"
+                  placeholder="请输入奖品描述"
+                />
+                {{#if this.validationErrors.prize}}
+                  <div class="validation-error">{{this.validationErrors.prize}}</div>
+                {{/if}}
+              </div>
+
+              <div class="lottery-field">
+                <label for="lottery-prize-image">{{i18n "lottery.builder.prize_image_label"}}</label>
+                <p class="description">{{i18n "lottery.builder.prize_image_url_desc"}}</p>
+                <Input
+                  @value={{this.prizeImageUrl}}
+                  @input={{this.onPrizeImageUrlChange}}
+                  id="lottery-prize-image"
+                  placeholder="https://example.com/image.jpg"
+                  class="d-input"
+                />
+                <br />
+                <span class="description">{{i18n "lottery.builder.or_upload_file"}}</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  {{on "change" this.onFileChange}}
+                  class="d-input"
+                  disabled={{this.uploading}}
+                />
+                {{#if this.uploading}}
+                  <div class="upload-progress">{{i18n "upload.uploading"}}</div>
+                {{/if}}
+                {{#if this.prizeImageUrl}}
+                  <div class="upload-preview">
+                    <img
+                      src={{this.prizeImageUrl}}
+                      alt="Prize preview"
+                      style="max-width: 200px; margin-top: 10px;"
+                    />
+                  </div>
+                {{/if}}
+              </div>
+
+              <div class="lottery-field">
+                <label for="lottery-draw-at">{{i18n "lottery.builder.draw_at_label"}}</label>
+                <input
+                  type="datetime-local"
+                  value={{this.drawAt}}
+                  {{on "change" this.onDrawAtChange}}
+                  id="lottery-draw-at"
+                  required
+                  class="d-input {{if this.validationErrors.drawAt 'error'}}"
+                  disabled={{this.isEditMode}}
+                />
+                {{#if this.isEditMode}}
+                  <p class="description notice">{{i18n "lottery.builder.draw_at_locked_notice"}}</p>
+                {{/if}}
+                {{#if this.validationErrors.drawAt}}
+                  <div class="validation-error">{{this.validationErrors.drawAt}}</div>
+                {{/if}}
+              </div>
+
+              <div class="lottery-field">
+                <label for="lottery-winner-count">{{i18n "lottery.builder.winner_count_label"}}</label>
+                <p class="description">{{i18n "lottery.builder.winner_count_desc"}}</p>
+                <Input
+                  @type="number"
+                  @value={{this.winnerCount}}
+                  @input={{this.onWinnerCountChange}}
+                  id="lottery-winner-count"
+                  min="1"
+                  class="d-input {{if this.validationErrors.winnerCount 'error'}}"
+                />
+                {{#if this.validationErrors.winnerCount}}
+                  <div class="validation-error">{{this.validationErrors.winnerCount}}</div>
+                {{/if}}
+              </div>
+
+              <div class="lottery-field">
+                <label for="lottery-specified-winners">{{i18n "lottery.builder.specified_winners_label"}}</label>
+                <p class="description">{{i18n "lottery.builder.specified_winners_desc"}}</p>
+                <Input
+                  @value={{this.specifiedWinners}}
+                  @input={{this.onSpecifiedWinnersChange}}
+                  id="lottery-specified-winners"
+                  placeholder="8, 18, 28"
+                  class="d-input"
                 />
               </div>
-            {{/if}}
-          </div>
 
-          <div class="lottery-field">
-            <label for="lottery-draw-at">{{i18n "lottery.builder.draw_at_label"}}</label>
-            <input
-              type="datetime-local"
-              value={{this.drawAt}}
-              {{on "change" this.onDrawAtChange}}
-              id="lottery-draw-at"
-              required
-              class="d-input {{if this.validationErrors.drawAt 'error'}}"
-              disabled={{this.isEditMode}}
-            />
-            {{#if this.isEditMode}}
-              <p class="description notice">{{i18n "lottery.builder.draw_at_locked_notice"}}</p>
-            {{/if}}
-            {{#if this.validationErrors.drawAt}}
-              <div class="validation-error">{{this.validationErrors.drawAt}}</div>
-            {{/if}}
-          </div>
+              <div class="lottery-field">
+                <label for="lottery-threshold">{{i18n "lottery.builder.participant_threshold_label"}}</label>
+                <Input
+                  @type="number"
+                  @value={{this.participantThreshold}}
+                  @input={{this.onParticipantThresholdChange}}
+                  id="lottery-threshold"
+                  min={{this.siteSettings.lottery_min_participants_global}}
+                  class="d-input {{if this.validationErrors.participantThreshold 'error'}}"
+                  disabled={{this.isEditMode}}
+                />
+                {{#if this.isThresholdInvalid}}
+                  <div class="validation-error">{{this.thresholdErrorMessage}}</div>
+                {{/if}}
+                {{#if this.isEditMode}}
+                  <p class="description notice">{{i18n "lottery.builder.threshold_locked_notice"}}</p>
+                {{/if}}
+              </div>
 
-          <div class="lottery-field">
-            <label for="lottery-winner-count">{{i18n "lottery.builder.winner_count_label"}}</label>
-            <p class="description">{{i18n "lottery.builder.winner_count_desc"}}</p>
-            <Input
-              @type="number"
-              @value={{this.winnerCount}}
-              @input={{this.onWinnerCountChange}}
-              id="lottery-winner-count"
-              min="1"
-              class="d-input {{if this.validationErrors.winnerCount 'error'}}"
-            />
-            {{#if this.validationErrors.winnerCount}}
-              <div class="validation-error">{{this.validationErrors.winnerCount}}</div>
-            {{/if}}
-          </div>
+              <div class="lottery-field">
+                <label>{{i18n "lottery.builder.fallback_strategy_label"}}</label>
+                <ComboBox
+                  @content={{this.fallbackOptions}}
+                  @value={{this.fallbackStrategy}}
+                  @onChange={{this.onFallbackStrategyChange}}
+                  @disabled={{this.isEditMode}}
+                />
+                {{#if this.isEditMode}}
+                  <p class="description notice">{{i18n "lottery.builder.strategy_locked_notice"}}</p>
+                {{/if}}
+              </div>
 
-          <div class="lottery-field">
-            <label for="lottery-specified-winners">{{i18n "lottery.builder.specified_winners_label"}}</label>
-            <p class="description">{{i18n "lottery.builder.specified_winners_desc"}}</p>
-            <Input
-              @value={{this.specifiedWinners}}
-              @input={{this.onSpecifiedWinnersChange}}
-              id="lottery-specified-winners"
-              placeholder="8, 18, 28"
-              class="d-input"
-            />
-          </div>
-
-          <div class="lottery-field">
-            <label for="lottery-threshold">{{i18n "lottery.builder.participant_threshold_label"}}</label>
-            <Input
-              @type="number"
-              @value={{this.participantThreshold}}
-              @input={{this.onParticipantThresholdChange}}
-              id="lottery-threshold"
-              min={{this.siteSettings.lottery_min_participants_global}}
-              class="d-input {{if this.validationErrors.participantThreshold 'error'}}"
-              disabled={{this.isEditMode}}
-            />
-            {{#if this.isThresholdInvalid}}
-              <div class="validation-error">{{this.thresholdErrorMessage}}</div>
-            {{/if}}
-            {{#if this.isEditMode}}
-              <p class="description notice">{{i18n "lottery.builder.threshold_locked_notice"}}</p>
-            {{/if}}
-          </div>
-
-          <div class="lottery-field">
-            <label>{{i18n "lottery.builder.fallback_strategy_label"}}</label>
-            <ComboBox
-              @content={{this.fallbackOptions}}
-              @value={{this.fallbackStrategy}}
-              @onChange={{this.onFallbackStrategyChange}}
-              @disabled={{this.isEditMode}}
-            />
-            {{#if this.isEditMode}}
-              <p class="description notice">{{i18n "lottery.builder.strategy_locked_notice"}}</p>
-            {{/if}}
-          </div>
-
-          <div class="lottery-field">
-            <label for="lottery-description">{{i18n "lottery.builder.description_label"}}</label>
-            <Textarea
-              @value={{this.description}}
-              @input={{this.onDescriptionChange}}
-              id="lottery-description"
-              rows="4"
-              class="d-input"
-              placeholder="可选的补充说明..."
-            />
-          </div>
-        </form>
+              <div class="lottery-field">
+                <label for="lottery-description">{{i18n "lottery.builder.description_label"}}</label>
+                <Textarea
+                  @value={{this.description}}
+                  @input={{this.onDescriptionChange}}
+                  id="lottery-description"
+                  rows="4"
+                  class="d-input"
+                  placeholder="可选的补充说明..."
+                />
+              </div>
+            </form>
+          {{else}}
+            <div class="lottery-preview-container">
+              <LotteryPreview
+                @name={{this.previewData.name}}
+                @prize={{this.previewData.prize}}
+                @prizeImageUrl={{this.previewData.prizeImageUrl}}
+                @drawAt={{this.previewData.drawAt}}
+                @winnerCount={{this.previewData.winnerCount}}
+                @participantThreshold={{this.previewData.participantThreshold}}
+                @fallbackStrategy={{this.previewData.fallbackStrategy}}
+                @description={{this.previewData.description}}
+              />
+            </div>
+          {{/unless}}
+        </div>
       </:body>
       <:footer>
         <DButton
