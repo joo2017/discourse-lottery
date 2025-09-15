@@ -2,6 +2,7 @@ import Component from "@glimmer/component";
 import { tracked } from "@glimmer/tracking";
 import { action } from "@ember/object";
 import { service } from "@ember/service";
+import { on } from "@ember/modifier";
 import icon from "discourse/helpers/d-icon";
 import { ajax } from "discourse/lib/ajax";
 import { popupAjaxError } from "discourse/lib/ajax-error";
@@ -56,6 +57,12 @@ export default class LotteryParticipants extends Component {
         needed: threshold - current 
       });
     }
+  }
+
+  get progressPercentage() {
+    if (this.thresholdMet) return 100;
+    const threshold = this.args.lottery?.participant_threshold || 1;
+    return Math.min((this.participantCount / threshold) * 100, 100);
   }
 
   @action
@@ -119,7 +126,7 @@ export default class LotteryParticipants extends Component {
               <div class="progress-bar">
                 <div 
                   class="progress-fill {{if this.thresholdMet 'complete'}}"
-                  style="width: {{if this.thresholdMet '100' (div (mul this.participantCount 100) @lottery.participant_threshold)}}%"
+                  style="width: {{this.progressPercentage}}%"
                 ></div>
               </div>
               <div class="progress-text">
