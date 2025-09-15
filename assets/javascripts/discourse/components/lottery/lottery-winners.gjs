@@ -3,6 +3,7 @@ import { action } from "@ember/object";
 import { service } from "@ember/service";
 import { on } from "@ember/modifier";
 import { fn } from "@ember/helper";
+import { eq, gt } from "@ember/helper";
 import icon from "discourse/helpers/d-icon";
 import avatar from "discourse/helpers/avatar";
 import { formatUsername } from "discourse/lib/utilities";
