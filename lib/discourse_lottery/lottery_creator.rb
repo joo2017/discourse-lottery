@@ -18,6 +18,10 @@ module DiscourseLottery
       lottery.assign_attributes(lottery_attrs)
 
       if lottery.save
+        # 设置主题自定义字段
+        post.topic.custom_fields[DiscourseLottery::TOPIC_LOTTERY_DRAW_AT] = lottery.draw_at.iso8601
+        post.topic.save_custom_fields
+
         # Cancel previous jobs to handle edits
         Jobs.cancel_scheduled_job(:execute_lottery_draw, lottery_id: lottery.post_id)
         Jobs.cancel_scheduled_job(:lock_lottery_post, post_id: lottery.post_id)
