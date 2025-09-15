@@ -141,18 +141,17 @@ export default apiInitializer("1.15.0", (api) => {
       }
     });
 
-    // 为抽奖添加主题列表自定义字段支持
-    api.addPreloadedTopicListCustomField("lottery_draw_at");
-    
     // 在主题列表中显示抽奖图标
-    api.addTopicTitleDecorator((topicModel, node) => {
-      if (topicModel.lottery_draw_at) {
-        const lotteryIcon = document.createElement('span');
-        lotteryIcon.className = 'topic-lottery-icon';
-        lotteryIcon.innerHTML = '<svg class="fa d-icon d-icon-gift svg-icon svg-string" xmlns="http://www.w3.org/2000/svg"><use href="#gift"></use></svg>';
-        lotteryIcon.title = '包含抽奖活动';
-        node.insertBefore(lotteryIcon, node.firstChild);
-      }
-    });
+    if (api.addTopicTitleDecorator) {
+      api.addTopicTitleDecorator((topicModel, node) => {
+        if (topicModel.lottery_draw_at) {
+          const lotteryIcon = document.createElement('span');
+          lotteryIcon.className = 'topic-lottery-icon';
+          lotteryIcon.innerHTML = '<svg class="fa d-icon d-icon-gift svg-icon svg-string" xmlns="http://www.w3.org/2000/svg"><use href="#gift"></use></svg>';
+          lotteryIcon.title = '包含抽奖活动';
+          node.insertBefore(lotteryIcon, node.firstChild);
+        }
+      });
+    }
   }
 });
