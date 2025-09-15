@@ -41,17 +41,31 @@ after_initialize do
   # 注册自定义字段类型
   register_topic_custom_field_type(DiscourseLottery::TOPIC_LOTTERY_DRAW_AT, :string)
 
-  # 确保自定义字段被预加载到主题列表
-  if Topic.respond_to?(:preloaded_custom_fields)
-    Topic.preloaded_custom_fields << DiscourseLottery::TOPIC_LOTTERY_DRAW_AT
-  end
+  # 修改预加载逻辑 - 在 TopicList 初始化时预加载自定义字段
+  reloadable_patch do |plugin|
+    TopicList.class_eval do
+      alias_method :original_load_topics, :load_topics
 
-  if TopicList.respond_to?(:preloaded_topic_custom_fields)
-    TopicList.preloaded_topic_custom_fields << DiscourseLottery::TOPIC_LOTTERY_DRAW_AT
-  end
+      def load_topics
+        result = original_load_topics
+        if SiteSetting.lottery_enabled && @topics.present?
+          # 预加载抽奖相关的自定义字段
+          topic_ids = @topics.map(&:id)
+          lottery_fields = TopicCustomField.where(
+            topic_id: topic_ids,
+            name: DiscourseLottery::TOPIC_LOTTERY_DRAW_AT
+          ).pluck(:topic_id, :value).to_h
 
-  if Site.respond_to?(:preloaded_topic_custom_fields)
-    Site.preloaded_topic_custom_fields << DiscourseLottery::TOPIC_LOTTERY_DRAW_AT
+          @topics.each do |topic|
+            topic.custom_fields ||= {}
+            if lottery_fields[topic.id]
+              topic.custom_fields[DiscourseLottery::TOPIC_LOTTERY_DRAW_AT] = lottery_fields[topic.id]
+            end
+          end
+        end
+        result
+      end
+    end
   end
 
   # Serialize the lottery data with the post
@@ -59,16 +73,18 @@ after_initialize do
     DiscourseLottery::LotterySerializer.new(object.lottery, scope: scope, root: false)
   end
 
-  # 添加到主题列表序列化器
+  # 简化的主题列表序列化器 - 直接检查自定义字段
   add_to_serializer(:topic_list_item, :lottery_draw_at, include_condition: -> { 
-    object.custom_fields && object.custom_fields[DiscourseLottery::TOPIC_LOTTERY_DRAW_AT].present? 
+    SiteSetting.lottery_enabled && 
+    object.custom_fields&.key?(DiscourseLottery::TOPIC_LOTTERY_DRAW_AT)
   }) do
     object.custom_fields[DiscourseLottery::TOPIC_LOTTERY_DRAW_AT]
   end
 
   # 添加到主题视图序列化器
   add_to_serializer(:topic_view, :lottery_draw_at, include_condition: -> { 
-    object.topic.custom_fields && object.topic.custom_fields[DiscourseLottery::TOPIC_LOTTERY_DRAW_AT].present? 
+    SiteSetting.lottery_enabled &&
+    object.topic.custom_fields&.key?(DiscourseLottery::TOPIC_LOTTERY_DRAW_AT)
   }) do
     object.topic.custom_fields[DiscourseLottery::TOPIC_LOTTERY_DRAW_AT]
   end
