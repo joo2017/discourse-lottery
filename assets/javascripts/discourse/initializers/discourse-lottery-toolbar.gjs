@@ -7,22 +7,28 @@ export default apiInitializer("1.15.0", (api) => {
     return;
   }
 
-  // 使用正确的现代 API
+  let buttonAdded = false; // 防止重复添加
+
   api.onToolbarCreate((toolbar) => {
-    if (toolbar.context !== "composer") {
+    if (toolbar.context !== "composer" || buttonAdded) {
+      return;
+    }
+
+    // 检查按钮是否已存在
+    const existingButton = toolbar.groups?.extras?.find(btn => btn.id === "lottery_ui_builder");
+    if (existingButton) {
       return;
     }
 
     toolbar.addButton({
       id: "lottery_ui_builder",
       group: "extras",
-      icon: "gift", 
+      icon: "gift",
       label: "lottery.builder.attach",
       shortcut: "Ctrl+Shift+L",
       action: (toolbarEvent) => {
         const modal = api.container.lookup("service:modal");
         
-        // 动态导入组件
         import("discourse/plugins/discourse-lottery/discourse/components/lottery/builder")
           .then((module) => {
             const LotteryBuilder = module.default;
@@ -36,7 +42,6 @@ export default apiInitializer("1.15.0", (api) => {
           .catch((error) => {
             console.error("Failed to load LotteryBuilder component:", error);
             
-            // 备用方案：直接插入BBCode
             const now = new Date();
             const tomorrow = new Date(now.getTime() + 24*60*60*1000);
             const drawAtString = tomorrow.toISOString().slice(0,16);
@@ -46,5 +51,7 @@ export default apiInitializer("1.15.0", (api) => {
           });
       }
     });
+
+    buttonAdded = true;
   });
 });
