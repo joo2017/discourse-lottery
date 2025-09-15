@@ -21,6 +21,9 @@ module DiscourseLottery
         # 设置主题自定义字段
         post.topic.custom_fields[DiscourseLottery::TOPIC_LOTTERY_DRAW_AT] = lottery.draw_at.iso8601
         post.topic.save_custom_fields
+        
+        # 刷新主题以确保自定义字段被正确加载
+        post.topic.reload
 
         # Cancel previous jobs to handle edits
         Jobs.cancel_scheduled_job(:execute_lottery_draw, lottery_id: lottery.post_id)
