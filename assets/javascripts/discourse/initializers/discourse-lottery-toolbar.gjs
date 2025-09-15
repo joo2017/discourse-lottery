@@ -7,6 +7,7 @@ export default apiInitializer("1.15.0", (api) => {
     return;
   }
 
+  // 使用正确的现代 API
   api.onToolbarCreate((toolbar) => {
     if (toolbar.context !== "composer") {
       return;
@@ -15,7 +16,7 @@ export default apiInitializer("1.15.0", (api) => {
     toolbar.addButton({
       id: "lottery_ui_builder",
       group: "extras",
-      icon: "gift",
+      icon: "gift", 
       label: "lottery.builder.attach",
       shortcut: "Ctrl+Shift+L",
       action: (toolbarEvent) => {
@@ -34,8 +35,13 @@ export default apiInitializer("1.15.0", (api) => {
           })
           .catch((error) => {
             console.error("Failed to load LotteryBuilder component:", error);
+            
             // 备用方案：直接插入BBCode
-            const basicBBCode = `[lottery name="抽奖活动" prize="奖品描述" drawAt="${new Date(Date.now() + 24*60*60*1000).toISOString().slice(0,16)}" winnerCount="1" participantThreshold="5" fallbackStrategy="continue"]\n[/lottery]`;
+            const now = new Date();
+            const tomorrow = new Date(now.getTime() + 24*60*60*1000);
+            const drawAtString = tomorrow.toISOString().slice(0,16);
+            
+            const basicBBCode = `[lottery name="抽奖活动" prize="奖品描述" drawAt="${drawAtString}" winnerCount="1" participantThreshold="5" fallbackStrategy="continue"]\n[/lottery]`;
             toolbarEvent.addText(basicBBCode);
           });
       }
