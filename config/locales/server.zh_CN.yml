@@ -1,0 +1,22 @@
+zh_CN:
+  site_settings:
+    lottery_enabled: "启用抽奖插件"
+    lottery_min_participants_global: "全局最低参与人数门槛"
+    lottery_post_lock_delay_minutes: "抽奖规则保护期（后悔期）"
+    lottery_post_lock_delay_minutes_description: "抽奖发布后，发起者可在此期限内（分钟）编辑主楼。超过时限将自动锁定。设为0则立即锁定。"
+    lottery_excluded_groups: "抽奖资格排除用户组"
+    lottery_excluded_groups_description: "选中的用户组成员将无法参与任何抽奖。"
+  
+  lottery:
+    feedback:
+      disabled: "抽奖功能当前未启用。"
+      missing_fields: "您提交的信息不完整，所有必填项都需要填写。"
+      min_participants_too_low: "您设置的“参与门槛”过低，不能低于系统设定的全局门槛 %{min} 人。"
+      invalid_specified_floors: "您填写的“指定中奖楼层”格式不正确，请使用英文逗号分隔数字。"
+      creation_error: "创建抽奖时发生内部错误：%{error}"
+      template: |
+        :warning: @%{username}，您的抽奖活动创建失败！
+
+        **失败原因：** %{reason}
+
+        请您编辑主楼层修改相关设置后重试。
