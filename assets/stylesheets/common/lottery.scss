@@ -1,0 +1,33 @@
+.lottery-form-container {
+  border: 1px solid var(--primary-low);
+  padding: 15px;
+  margin-top: 15px;
+  border-radius: 5px;
+  background-color: var(--secondary);
+
+  .lottery-form-title {
+    font-weight: bold;
+    font-size: var(--font-up-1);
+    margin-bottom: 15px;
+  }
+
+  .control-group {
+    margin-bottom: 10px;
+    
+    label {
+      display: block;
+      font-weight: 500;
+      margin-bottom: 5px;
+    }
+
+    .instructions, .error {
+      font-size: var(--font-down-1);
+      color: var(--primary-medium);
+      margin-top: 4px;
+    }
+
+    .error {
+      color: var(--danger);
+    }
+  }
+}
