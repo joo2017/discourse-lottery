@@ -1,0 +1,26 @@
+zh_CN:
+  js:
+    lottery:
+      form:
+        title: "抽奖设置"
+        activity_name: "活动名称"
+        activity_name_placeholder: "例如：庆祝论坛一周年抽奖"
+        prize_description: "奖品说明"
+        prize_description_placeholder: "例如：官方定制T恤一件"
+        prize_image: "奖品图片 (URL)"
+        prize_image_placeholder: "https://example.com/image.png"
+        draw_time: "开奖时间"
+        winner_count: "获奖人数"
+        winner_count_desc: "这是随机抽奖时的获奖人数。如果您想按指定楼层开奖，请直接填写下面的‘指定中奖楼层’项。"
+        specified_floors: "指定中奖楼层 (可选)"
+        specified_floors_desc: "填写此项将覆盖随机抽奖。请在此填写具体的楼层号，用英文逗号分隔，例如：8, 18, 28。"
+        min_participants: "参与门槛"
+        min_participants_desc: "活动需要达到的最少有效参与人数。"
+        min_participants_error: "参与门槛不能低于系统设定的 %{min} 人"
+        fallback_strategy: "后备策略"
+        fallback_strategy_desc: "当开奖时人数未达到门槛时，系统应如何处理。"
+        options:
+          continue_draw: "继续开奖"
+          cancel_activity: "取消活动"
+        extra_info: "补充说明"
+        extra_info_placeholder: "其他需要说明的规则或信息..."
